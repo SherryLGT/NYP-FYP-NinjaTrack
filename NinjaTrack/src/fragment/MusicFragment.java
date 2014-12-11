@@ -16,18 +16,16 @@
 
 package fragment;
 
+import nyp.fypj.ninjatrack.R;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
-import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragment;
-import nyp.fypj.ninjatrack.R;
 
 public class MusicFragment extends SherlockFragment{
 
@@ -52,23 +50,37 @@ public class MusicFragment extends SherlockFragment{
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-
+		
 		FrameLayout fl = new FrameLayout(getActivity());
+		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		fl.setLayoutParams(params);
-
-		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-
-		TextView v = new TextView(getActivity());
-		params.setMargins(margin, margin, margin, margin);
-		v.setLayoutParams(params);
-		v.setLayoutParams(params);
-		v.setGravity(Gravity.CENTER);
-		v.setBackgroundResource(R.drawable.background_card);
-		v.setText("CARD " + (position + 1));
-
-		fl.addView(v);
+		
+		switch(position) { 
+			case 0:
+				View recorderView = inflater.inflate(R.layout.tab_recorder, null);
+				fl.addView(recorderView);
+				Fragment recorderFragment = new RecorderFragment();
+				getFragmentManager().beginTransaction().replace(R.id.tab_recorder, recorderFragment).commit();
+				break;
+			case 1:
+				View drumView = inflater.inflate(R.layout.tab_drum, null);
+				fl.addView(drumView);
+				Fragment drumFragment = new DrumFragment();
+				getFragmentManager().beginTransaction().replace(R.id.tab_drum, drumFragment).commit();
+				break;
+			case 2:
+				View saxophoneView = inflater.inflate(R.layout.tab_saxophone, null);
+				fl.addView(saxophoneView);
+				Fragment saxophoneFragment = new SaxophoneFragment();
+				getFragmentManager().beginTransaction().replace(R.id.tab_saxophone, saxophoneFragment).commit();
+				break;
+			case 3:
+				View handBellView = inflater.inflate(R.layout.tab_handbell, null);
+				fl.addView(handBellView);
+				Fragment handBellFragment = new HandBellFragment();
+				getFragmentManager().beginTransaction().replace(R.id.tab_handbell, handBellFragment).commit();
+				break;
+		}
 		return fl;
 	}
 }

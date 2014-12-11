@@ -1,14 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:paddingLeft="25dp"
+    android:paddingRight="25dp"
+    android:background="@color/light_blue">
     
     <TextView
-        android:id="@+id/txtLabel"
-         android:layout_width="wrap_content"
+        android:id="@+id/lbl_audio"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:textSize="16dp"
-        android:text="Section 3"/>    
+	    android:paddingTop="20dp"
+	    android:paddingBottom="20dp"
+	    android:layout_marginLeft="5dp"
+	    android:layout_marginRight="63dp"
+        android:text="@string/lbl_audio" />
+    
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+	    android:paddingTop="20dp"
+	    android:paddingBottom="20dp"
+        android:layout_toRightOf="@+id/lbl_audio"
+        android:text="Audio" />
+    
+    <View
+        android:id="@+id/divider_audio"
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:layout_below="@+id/lbl_audio"
+        android:background="@color/blue" />
+    
+    <TextView
+        android:id="@+id/lbl_bluetooth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+	    android:paddingTop="20dp"
+	    android:paddingBottom="20dp"
+	    android:layout_marginLeft="5dp"
+	    android:layout_marginRight="40dp"
+        android:layout_below="@+id/divider_audio"
+        android:text="@string/lbl_bluetooth" />
+    
+    <TextView
+        android:id="@+id/tv_bluetooth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+	    android:paddingTop="20dp"
+	    android:paddingBottom="20dp"
+        android:layout_below="@+id/divider_audio"
+        android:layout_toRightOf="@+id/lbl_bluetooth" />
+    
+    <View
+        android:id="@+id/divider_bluetooth"
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:layout_below="@+id/lbl_bluetooth"
+        android:background="@color/blue" />
+    
+    <TextView
+        android:id="@+id/lbl_ninjatrack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+	    android:paddingTop="20dp"
+	    android:paddingBottom="20dp"
+	    android:layout_marginLeft="5dp"
+	    android:layout_marginRight="29.5dp"
+        android:layout_below="@+id/divider_bluetooth"
+        android:text="@string/lbl_ninjatrack" />
+    
+    <TextView
+        android:id="@+id/tv_ninjatrack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+	    android:paddingTop="20dp"
+	    android:paddingBottom="20dp"
+        android:layout_below="@+id/divider_bluetooth"
+        android:layout_toRightOf="@+id/lbl_ninjatrack" />
 
 </RelativeLayout>

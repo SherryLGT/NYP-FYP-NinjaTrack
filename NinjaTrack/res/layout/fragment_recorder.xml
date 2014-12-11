@@ -5,17 +5,46 @@
     
     <ImageView
         android:id="@+id/equaliser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="280dp"
+        android:layout_height="250dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
         android:contentDescription="@string/image_view"
         android:src="@drawable/equaliser" />
     
      <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/progress_bar"
         style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="10dp"
         android:layout_below="@+id/equaliser"
         android:progressDrawable="@drawable/progress_bar" />
+     
+     <TextView
+         android:id="@+id/start_time"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginLeft="18dp"
+         android:layout_below="@+id/progress_bar" />
+     
+     <TextView
+         android:id="@+id/end_time"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentRight="true"
+         android:layout_marginRight="18dp"
+         android:layout_below="@+id/progress_bar" />     
+
+    <ListView
+        android:id="@+id/lv_song"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@color/light_blue"
+        android:divider="@color/blue"
+        android:dividerHeight="1dp" />"
  
 </RelativeLayout>

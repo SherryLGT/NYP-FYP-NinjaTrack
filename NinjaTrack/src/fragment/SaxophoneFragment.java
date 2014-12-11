@@ -13,8 +13,7 @@ public class SaxophoneFragment extends Fragment {
 	public SaxophoneFragment(){}
 	
 	@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
  
         View rootView = inflater.inflate(R.layout.fragment_saxophone, container, false);
          

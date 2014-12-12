@@ -1,82 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingLeft="25dp"
-    android:paddingRight="25dp"
-    android:background="@color/light_blue">
-    
+    android:layout_height="match_parent"
+    android:paddingTop="15dp"
+    android:paddingLeft="13dp"
+    android:paddingRight="13dp"
+    android:background="@color/light_blue">    
+	    
     <TextView
-        android:id="@+id/lbl_audio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-	    android:layout_marginLeft="5dp"
-	    android:layout_marginRight="63dp"
-        android:text="@string/lbl_audio" />
-    
-    <TextView
-        android:id="@+id/tv_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-        android:layout_toRightOf="@+id/lbl_audio"
-        android:text="Audio" />
-    
+        android:id="@+id/lbl_account"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="@string/lbl_account"
+	    android:textSize="@dimen/header_size"
+	    android:textColor="@color/blue"
+	    android:textStyle="bold" />
+	    
     <View
-        android:id="@+id/divider_audio"
+        android:id="@+id/divider_account"
         android:layout_width="fill_parent"
         android:layout_height="2dp"
-        android:layout_below="@+id/lbl_audio"
+        android:layout_below="@+id/lbl_account"
         android:background="@color/blue" />
-    
+	    
+    <RelativeLayout
+        android:id="@+id/rl_account"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/divider_account"
+	    android:layout_marginBottom="20dp"
+        android:background="@color/dull_blue" >
+	    
+        <TextView
+	        android:id="@+id/lbl_username"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginTop="10dp"
+		    android:layout_marginRight="35dp"
+		    android:text="@string/lbl_username"
+	    	android:textSize="@dimen/font_size" />
+        
+        <EditText
+            android:id="@+id/et_username"
+		    android:layout_width="210dp"
+		    android:layout_height="wrap_content"
+		    android:layout_toRightOf="@+id/lbl_username"
+	    	android:textSize="@dimen/font_size"
+	    	android:hint="@string/hint_username" />
+	    
+        <TextView
+	        android:id="@+id/lbl_password"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginTop="10dp"
+		    android:layout_marginRight="35dp"
+		    android:layout_below="@+id/lbl_username"
+		    android:text="@string/lbl_password"
+	    	android:textSize="@dimen/font_size" />
+        
+        <EditText
+            android:id="@+id/et_password"
+		    android:layout_width="210dp"
+		    android:layout_height="wrap_content"
+		    android:layout_below="@+id/et_username"
+		    android:layout_toRightOf="@+id/lbl_username"
+	    	android:textSize="@dimen/font_size"
+	    	android:inputType="textPassword"
+	    	android:hint="@string/hint_password" />
+        
+        <Button
+            android:id="@+id/btn_login"
+		    android:layout_width="80dp"
+		    android:layout_height="36dp"
+		    android:layout_below="@+id/et_password"
+		    android:layout_alignParentRight="true"
+		    android:layout_margin="15dp"
+		    android:background="@drawable/button_selector"
+		    android:text="@string/btn_login"
+		    android:textColor="@color/white"
+		    android:textSize="15sp" />
+    </RelativeLayout>
+	    
     <TextView
-        android:id="@+id/lbl_bluetooth"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-	    android:layout_marginLeft="5dp"
-	    android:layout_marginRight="40dp"
-        android:layout_below="@+id/divider_audio"
-        android:text="@string/lbl_bluetooth" />
-    
-    <TextView
-        android:id="@+id/tv_bluetooth"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-        android:layout_below="@+id/divider_audio"
-        android:layout_toRightOf="@+id/lbl_bluetooth" />
-    
+        android:id="@+id/lbl_device"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/rl_account"
+	    android:text="@string/lbl_device"
+	    android:textSize="@dimen/header_size"
+	    android:textColor="@color/blue"
+	    android:textStyle="bold" />
+	    
     <View
-        android:id="@+id/divider_bluetooth"
+        android:id="@+id/divider_device"
         android:layout_width="fill_parent"
         android:layout_height="2dp"
-        android:layout_below="@+id/lbl_bluetooth"
+        android:layout_below="@+id/lbl_device"
         android:background="@color/blue" />
-    
-    <TextView
-        android:id="@+id/lbl_ninjatrack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-	    android:layout_marginLeft="5dp"
-	    android:layout_marginRight="29.5dp"
-        android:layout_below="@+id/divider_bluetooth"
-        android:text="@string/lbl_ninjatrack" />
-    
-    <TextView
-        android:id="@+id/tv_ninjatrack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-        android:layout_below="@+id/divider_bluetooth"
-        android:layout_toRightOf="@+id/lbl_ninjatrack" />
+	    
+    <RelativeLayout
+        android:id="@+id/rl_device"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/divider_device"
+	    android:paddingTop="10dp"
+	    android:layout_marginBottom="20dp"
+        android:background="@color/dull_blue" >
+	    
+        <TextView
+	        android:id="@+id/lbl_ninjatrack"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginRight="90dp"
+		    android:text="@string/lbl_ninjatrack"
+	    	android:textSize="@dimen/font_size" />
+        
+        <TextView
+            android:id="@+id/tv_ninjatrack"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_toRightOf="@+id/lbl_ninjatrack"
+	    	android:textSize="@dimen/font_size"
+	    	android:textColor="@color/bright_blue"
+	    	android:textStyle="bold" />
+        
+        <Button
+            android:id="@+id/btn_reconnect"
+		    android:layout_width="80dp"
+		    android:layout_height="36dp"
+		    android:layout_below="@+id/tv_ninjatrack"
+		    android:layout_alignParentRight="true"
+		    android:layout_margin="15dp"
+		    android:background="@drawable/button_selector"
+		    android:text="@string/btn_reconnect"
+		    android:textColor="@color/white"
+		    android:textSize="15sp" />
+    </RelativeLayout>
 
 </RelativeLayout>

@@ -6,7 +6,11 @@
     <color name="gray">#ccc</color>
     <color name="light_gray">#e9e9e9</color>
     <color name="turquoise">#3997a4</color>
+    <color name="dull_turquoise">#5d7c84</color>
+    <color name="dark_turquoise">#3b5357</color>
     <color name="light_blue">#dbecfd</color>
+    <color name="bright_blue">#59c1ed</color>
+    <color name="dull_blue">#d3e6f8</color>
     <color name="blue">#9dc9fb</color>
     <color name="purple">#636fa8</color>
     

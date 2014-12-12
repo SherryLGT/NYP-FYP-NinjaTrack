@@ -7,7 +7,7 @@
     <string name="action_about">About</string>    
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
-    <string name="image_view">Image</string>
+    <string name="image">Image</string>
     
     <!-- Drawer -->
     <string-array name="drawer_titles">
@@ -35,11 +35,19 @@
     <!-- Profile -->
     <string name="lbl_name">Name</string>
     <string name="lbl_age">Age</string>
-    <string name="lbl_address">Address</string>
+    <string name="lbl_contact_no">Contact No</string>
+    <string name="lbl_email">Email</string>
+    <string name="lbl_start_date">Start Date</string>
     
     <!-- Setting -->
-    <string name="lbl_audio">Audio</string>
-    <string name="lbl_bluetooth">Bluetooth</string>
+    <string name="lbl_account">ACCCOUNT</string>
+    <string name="lbl_username">User Name</string>
+    <string name="hint_username">Enter your email</string>
+    <string name="lbl_password">Password</string>
+    <string name="hint_password">Enter your password</string>
+    <string name="lbl_device">DEVICE</string>
     <string name="lbl_ninjatrack">Ninja Track</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_reconnect">Reconnect</string>
     
 </resources>

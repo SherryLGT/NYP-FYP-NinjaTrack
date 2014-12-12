@@ -1,15 +1,22 @@
 package model;
 
+import java.sql.Date;
+
 public class Profile {
 
-	private int id, age;
-	private String name, address;
+	private int id, contactNo;
+	private String name, email;
+	private Date age, startDate;
 	
-	public Profile(int id, String name, int age, String address) {
+	public Profile() {};
+	
+	public Profile(int id, String name, Date age, int contactNo, String email, Date startDate) {
 		this.id = id;
 		this.name = name;
 		this.age = age;
-		this.address = address;
+		this.contactNo = contactNo;
+		this.email = email;
+		this.startDate = startDate;
 	}
 
 	public int getId() {
@@ -20,12 +27,12 @@ public class Profile {
 		this.id = id;
 	}
 
-	public int getAge() {
-		return age;
+	public int getContactNo() {
+		return contactNo;
 	}
 
-	public void setAge(int age) {
-		this.age = age;
+	public void setContactNo(int contactNo) {
+		this.contactNo = contactNo;
 	}
 
 	public String getName() {
@@ -36,11 +43,27 @@ public class Profile {
 		this.name = name;
 	}
 
-	public String getAddress() {
-		return address;
+	public String getEmail() {
+		return email;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Date getAge() {
+		return age;
+	}
+
+	public void setAge(Date age) {
+		this.age = age;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
 	}
 }

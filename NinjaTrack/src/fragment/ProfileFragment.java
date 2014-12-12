@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 public class ProfileFragment extends Fragment {
 	
-	private TextView tv_name, tv_age, tv_address;
+	private TextView tv_name, tv_age, tv_contact_no, tv_email, tv_start_date;
 	
 	public ProfileFragment(){}
 	
@@ -22,11 +22,15 @@ public class ProfileFragment extends Fragment {
         
         tv_name = (TextView) rootView.findViewById(R.id.tv_name);
         tv_age = (TextView) rootView.findViewById(R.id.tv_age);
-        tv_address = (TextView) rootView.findViewById(R.id.tv_address);
+        tv_contact_no = (TextView) rootView.findViewById(R.id.tv_contact_no);
+        tv_email = (TextView) rootView.findViewById(R.id.tv_email);
+        tv_start_date = (TextView) rootView.findViewById(R.id.tv_start_date);
         
-        tv_name.setText("Lee Eng Kiat");
-        tv_age.setText("56");
-        tv_address.setText("150 Ang Mo Kio Avenue 3");
+        tv_name.setText("Winnie");
+        tv_age.setText("6/10/1997");
+        tv_contact_no.setText("65501675");
+        tv_email.setText("winnie@outlook.com");
+        tv_start_date.setText("12/11/2014");
          
         return rootView;
     }

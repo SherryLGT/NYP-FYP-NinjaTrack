@@ -1,81 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingLeft="25dp"
-    android:paddingRight="25dp"
-    android:background="@color/light_blue">
+    android:layout_height="match_parent"
+   	android:background="@color/light_blue" >
     
-    <TextView
-        android:id="@+id/lbl_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-	    android:layout_marginLeft="5dp"
-	    android:layout_marginRight="44dp"
-        android:text="@string/lbl_name" />
+    <ImageButton
+        android:id="@+id/btn_edit"
+        android:layout_width="35dp"
+        android:layout_height="38dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:contentDescription="@string/image"
+        android:scaleType="fitEnd"
+        android:background="@null"
+        android:src="@drawable/icon_edit" />    
     
-    <TextView
-        android:id="@+id/tv_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-        android:layout_toRightOf="@+id/lbl_name" />
-    
-    <View
-        android:id="@+id/divider_name"
-        android:layout_width="fill_parent"
-        android:layout_height="2dp"
-        android:layout_below="@+id/lbl_name"
-        android:background="@color/blue" />
-    
-    <TextView
-        android:id="@+id/lbl_age"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-	    android:layout_marginLeft="5dp"
-	    android:layout_marginRight="58dp"
-        android:layout_below="@+id/divider_name"
-        android:text="@string/lbl_age" />
-    
-    <TextView
-        android:id="@+id/tv_age"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-        android:layout_below="@+id/divider_name"
-        android:layout_toRightOf="@+id/lbl_age" />
-    
-    <View
-        android:id="@+id/divider_age"
-        android:layout_width="fill_parent"
-        android:layout_height="2dp"
-        android:layout_below="@+id/lbl_age"
-        android:background="@color/blue" />
-    
-    <TextView
-        android:id="@+id/lbl_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-	    android:layout_marginLeft="5dp"
-	    android:layout_marginRight="30dp"
-        android:layout_below="@+id/divider_age"
-        android:text="@string/lbl_address" />
-    
-    <TextView
-        android:id="@+id/tv_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-	    android:paddingTop="20dp"
-	    android:paddingBottom="20dp"
-        android:layout_below="@+id/divider_age"
-        android:layout_toRightOf="@+id/lbl_address" />
-
+	<RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:paddingLeft="15dp"
+	    android:paddingRight="15dp"
+	    android:layout_below="@+id/btn_edit" >
+	    
+	    <!-- Profile image -->
+	    <ImageView
+	        android:id="@+id/profile_image"
+	        android:layout_width="160dp"
+	        android:layout_height="160dp"
+	        android:layout_marginBottom="20dp"
+	        android:layout_centerHorizontal="true"
+	        android:contentDescription="@string/image"
+	        android:src="@drawable/icon_profile" />
+		
+	    <!-- Name -->
+	    <TextView
+	        android:id="@+id/lbl_name"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/profile_image"
+	        android:layout_marginRight="90dp"
+	        android:text="@string/lbl_name"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <TextView
+	        android:id="@+id/tv_name"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/profile_image"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <View
+	        android:id="@+id/divider_name"
+	        android:layout_width="fill_parent"
+	        android:layout_height="2dp"
+	        android:layout_marginTop="@dimen/divider_space"
+	        android:layout_marginBottom="@dimen/divider_space"
+	        android:layout_below="@+id/lbl_name"
+	        android:background="@color/blue" />
+		
+	    <!-- Age -->
+	    <TextView
+	        android:id="@+id/lbl_age"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_name"
+	        android:text="@string/lbl_age"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <TextView
+	        android:id="@+id/tv_age"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_name"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <View
+	        android:id="@+id/divider_age"
+	        android:layout_width="fill_parent"
+	        android:layout_height="2dp"
+	        android:layout_marginTop="@dimen/divider_space"
+	        android:layout_marginBottom="@dimen/divider_space"
+	        android:layout_below="@+id/lbl_age"
+	        android:background="@color/blue" />
+		
+	    <!-- Contact No -->
+	    <TextView
+	        android:id="@+id/lbl_contact_no"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_age"
+	        android:text="@string/lbl_contact_no"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <TextView
+	        android:id="@+id/tv_contact_no"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_age"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <View
+	        android:id="@+id/divider_contact_no"
+	        android:layout_width="fill_parent"
+	        android:layout_height="2dp"
+	        android:layout_marginTop="@dimen/divider_space"
+	        android:layout_marginBottom="@dimen/divider_space"
+	        android:layout_below="@+id/lbl_contact_no"
+	        android:background="@color/blue" />
+		
+	    <!-- Email -->
+	    <TextView
+	        android:id="@+id/lbl_email"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_contact"
+	        android:text="@string/lbl_email"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <TextView
+	        android:id="@+id/tv_email"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_contact_no"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <View
+	        android:id="@+id/divider_email"
+	        android:layout_width="fill_parent"
+	        android:layout_height="2dp"
+	        android:layout_marginTop="@dimen/divider_space"
+	        android:layout_marginBottom="@dimen/divider_space"
+	        android:layout_below="@+id/lbl_email"
+	        android:background="@color/blue" />
+		
+	    <!-- Start Date -->
+	    <TextView
+	        android:id="@+id/lbl_start_date"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_email"
+	        android:text="@string/lbl_start_date"
+	        android:textSize="@dimen/font_size" />
+	    
+	    <TextView
+	        android:id="@+id/tv_start_date"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/divider_email"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:textSize="@dimen/font_size" />
+	</RelativeLayout>    
 </RelativeLayout>

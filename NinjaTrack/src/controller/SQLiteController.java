@@ -38,7 +38,7 @@ public class SQLiteController {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			// Create Profile table
-			db.execSQL("CREATE TABLE Profile (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, age TEXT NOT NULL, address TEXT NOT NULL)");
+			db.execSQL("CREATE TABLE Profile (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, age DATE NOT NULL, contact_no INTEGER NOT NULL, email TEXT NOT NULL, start_date DATE NOT NULL)");
 		}
 
 		@Override

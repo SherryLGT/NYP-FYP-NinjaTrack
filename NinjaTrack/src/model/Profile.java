@@ -1,16 +1,16 @@
 package model;
 
-import java.sql.Date;
+import java.util.GregorianCalendar;
 
 public class Profile {
 
 	private int id, contactNo;
 	private String name, email;
-	private Date age, startDate;
+	private GregorianCalendar age, startDate;
 	
 	public Profile() {};
 	
-	public Profile(int id, String name, Date age, int contactNo, String email, Date startDate) {
+	public Profile(int id, String name, GregorianCalendar age, int contactNo, String email, GregorianCalendar startDate) {
 		this.id = id;
 		this.name = name;
 		this.age = age;
@@ -51,19 +51,19 @@ public class Profile {
 		this.email = email;
 	}
 
-	public Date getAge() {
+	public GregorianCalendar getAge() {
 		return age;
 	}
 
-	public void setAge(Date age) {
+	public void setAge(GregorianCalendar age) {
 		this.age = age;
 	}
 
-	public Date getStartDate() {
+	public GregorianCalendar getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(Date startDate) {
+	public void setStartDate(GregorianCalendar startDate) {
 		this.startDate = startDate;
 	}
 }

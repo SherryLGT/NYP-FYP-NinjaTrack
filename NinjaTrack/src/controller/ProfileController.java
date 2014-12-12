@@ -1,6 +1,7 @@
 package controller;
 
 import model.Profile;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -16,12 +17,23 @@ public class ProfileController {
 		if(cursor != null) {
 			user.setId(cursor.getInt(cursor.getColumnIndex("id")));
 			user.setName(cursor.getString(cursor.getColumnIndex("name")));
-			//user.setAge(cursor.getString(cursor.getColumnIndex("age")));
+			user.setAge(SQLiteController.parseDateTime(cursor.getString(cursor.getColumnIndex("age"))));
 			user.setContactNo(cursor.getInt(cursor.getColumnIndex("contact_no")));
 			user.setEmail(cursor.getString(cursor.getColumnIndex("email")));
-			//user.setStartDate(cursor.getString(cursor.getColumnIndex("start_date")));
+			user.setStartDate(SQLiteController.parseDateTime(cursor.getString(cursor.getColumnIndex("start_date"))));
 		}
 				
-		return  user;
+		return user;
+	}
+	
+	public long updateProfile(Profile profile) {
+		ContentValues cv = new ContentValues();
+		cv.put("name", profile.getName());
+		cv.put("age", SQLiteController.setDateTime(profile.getAge()));
+		cv.put("contact_no", profile.getContactNo());
+		cv.put("email", profile.getEmail());
+		cv.put("start_date", SQLiteController.setDateTime(profile.getStartDate()));
+		
+		return database.update(database_table, cv, "id= " + profile.getId(), null);
 	}
 }

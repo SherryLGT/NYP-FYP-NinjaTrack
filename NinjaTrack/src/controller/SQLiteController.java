@@ -1,5 +1,11 @@
 package controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,7 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class SQLiteController {
-	private static final String database_name = "NinjaDB";
+	private static final String database_name = "NinjaTrackDB";
 	private static final int database_version = 1;
 	
 	private DBHelper helper;
@@ -27,6 +33,22 @@ public class SQLiteController {
 	
 	public void close() {
 		helper.close();
+	}
+
+	public static String setDateTime(GregorianCalendar date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+		return dateFormat.format(date);
+	}
+
+	public static GregorianCalendar parseDateTime(String date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+		GregorianCalendar cal = new GregorianCalendar();
+		try {
+			cal.setTime(dateFormat.parse(date));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return cal;
 	}
 	
 	private static class DBHelper extends SQLiteOpenHelper {

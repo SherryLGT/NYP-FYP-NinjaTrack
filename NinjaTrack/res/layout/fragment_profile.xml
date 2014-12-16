@@ -4,25 +4,42 @@
     android:layout_height="match_parent"
    	android:background="@color/light_blue" >
     
-    <ImageButton
-        android:id="@+id/btn_edit"
-        android:layout_width="35dp"
-        android:layout_height="38dp"
-        android:layout_alignParentRight="true"
+    <RelativeLayout
+        android:id="@+id/rl_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"
-        android:contentDescription="@string/image"
-        android:scaleType="fitEnd"
-        android:background="@null"
-        android:src="@drawable/icon_edit" />    
+        android:layout_marginBottom="10dp" >
+        
+	    <ImageButton
+	        android:id="@+id/btn_edit"
+	        android:layout_width="35dp"
+	        android:layout_height="38dp"
+	        android:layout_alignParentRight="true"
+	        android:contentDescription="@string/image"
+	        android:scaleType="fitEnd"
+	        android:background="@null"
+	        android:src="@drawable/icon_edit" />
+	    
+	    <ImageButton
+	        android:id="@+id/btn_done"
+	        android:layout_width="35dp"
+	        android:layout_height="38dp"
+	        android:layout_alignParentRight="true"
+	        android:contentDescription="@string/image"
+	        android:scaleType="fitEnd"
+	        android:background="@null"
+	        android:src="@drawable/icon_accept"
+	        android:visibility="gone" />
+    </RelativeLayout>
     
 	<RelativeLayout
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:paddingLeft="15dp"
 	    android:paddingRight="15dp"
-	    android:layout_below="@+id/btn_edit" >
+	    android:layout_below="@+id/rl_buttons" >
 	    
 	    <!-- Profile image -->
 	    <ImageView
@@ -40,7 +57,6 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/profile_image"
-	        android:layout_marginRight="90dp"
 	        android:text="@string/lbl_name"
 	        android:textSize="@dimen/font_size" />
 	    
@@ -50,7 +66,21 @@
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/profile_image"
 	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_tv"
 	        android:textSize="@dimen/font_size" />
+	    
+	    <EditText
+	        android:id="@+id/et_name"
+	        android:layout_width="@dimen/profile_etw"
+	        android:layout_height="@dimen/profile_eth"
+	        android:layout_below="@+id/profile_image"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_et"
+	        android:singleLine="true"
+	        android:maxLines="1"
+	        android:textSize="@dimen/font_size"
+	        android:hint="@string/hint_name"
+	        android:visibility="gone" />
 	    
 	    <View
 	        android:id="@+id/divider_name"
@@ -76,7 +106,22 @@
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/divider_name"
 	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_tv"
 	        android:textSize="@dimen/font_size" />
+	    
+	    <EditText
+	        android:id="@+id/et_age"
+	        android:layout_width="@dimen/profile_etw"
+	        android:layout_height="@dimen/profile_eth"
+	        android:layout_below="@+id/divider_name"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_et"
+	        android:singleLine="true"
+	        android:maxLines="1"
+	        android:textSize="@dimen/font_size"
+	        android:hint="@string/hint_age"
+        	android:focusable="false" 
+	        android:visibility="gone" />
 	    
 	    <View
 	        android:id="@+id/divider_age"
@@ -102,7 +147,21 @@
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/divider_age"
 	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_tv"
 	        android:textSize="@dimen/font_size" />
+	    
+	    <EditText
+	        android:id="@+id/et_contact_no"
+	        android:layout_width="@dimen/profile_etw"
+	        android:layout_height="@dimen/profile_eth"
+	        android:layout_below="@+id/divider_age"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_et"
+	        android:singleLine="true"
+	        android:maxLines="1"
+	        android:textSize="@dimen/font_size"
+	        android:hint="@string/hint_contact_no"
+	        android:visibility="gone" />
 	    
 	    <View
 	        android:id="@+id/divider_contact_no"
@@ -118,7 +177,7 @@
 	        android:id="@+id/lbl_email"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_below="@+id/divider_contact"
+	        android:layout_below="@+id/divider_contact_no"
 	        android:text="@string/lbl_email"
 	        android:textSize="@dimen/font_size" />
 	    
@@ -128,7 +187,22 @@
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/divider_contact_no"
 	        android:layout_toRightOf="@+id/lbl_name"
-	        android:textSize="@dimen/font_size" />
+	        android:layout_marginLeft="@dimen/profile_tv"
+	        android:textSize="@dimen/font_size"/>
+	    
+	    <EditText
+	        android:id="@+id/et_email"
+	        android:layout_width="@dimen/profile_etw"
+	        android:layout_height="@dimen/profile_eth"
+	        android:layout_below="@+id/divider_contact_no"
+	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_et"
+	        android:singleLine="true"
+	        android:maxLines="1"
+	        android:textSize="@dimen/font_size"
+	        android:inputType="textEmailAddress"
+	        android:hint="@string/hint_email"
+	        android:visibility="gone"  />
 	    
 	    <View
 	        android:id="@+id/divider_email"
@@ -154,6 +228,16 @@
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/divider_email"
 	        android:layout_toRightOf="@+id/lbl_name"
+	        android:layout_marginLeft="@dimen/profile_tv"
 	        android:textSize="@dimen/font_size" />
-	</RelativeLayout>    
+	    
+	    <View
+	        android:id="@+id/divider_start_date"
+	        android:layout_width="fill_parent"
+	        android:layout_height="2dp"
+	        android:layout_marginTop="@dimen/divider_space"
+	        android:layout_marginBottom="@dimen/divider_space"
+	        android:layout_below="@+id/lbl_start_date"
+	        android:background="@color/blue" />
+	</RelativeLayout>
 </RelativeLayout>

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="divider_space">10dp</dimen>
+    <dimen name="divider_space">12dp</dimen>
     <dimen name="header_size">15dp</dimen>
     <dimen name="font_size">17dp</dimen>
+    <dimen name="profile_tv">90dp</dimen>
+    <dimen name="profile_et">80dp</dimen>
+    <dimen name="profile_etw">200dp</dimen>
+    <dimen name="profile_eth">32.5dp</dimen>
 </resources>

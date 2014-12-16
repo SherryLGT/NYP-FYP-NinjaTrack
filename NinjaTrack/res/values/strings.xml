@@ -34,10 +34,15 @@
     
     <!-- Profile -->
     <string name="lbl_name">Name</string>
+    <string name="hint_name">Enter your name</string>
     <string name="lbl_age">Age</string>
+    <string name="hint_age">Enter your birthday (dd-mm-yyyy)</string>
     <string name="lbl_contact_no">Contact No</string>
+    <string name="hint_contact_no">Enter your contact no.</string>
     <string name="lbl_email">Email</string>
+    <string name="hint_email">Enter your email</string>
     <string name="lbl_start_date">Start Date</string>
+    <string name="btn_done">Done</string>
     
     <!-- Setting -->
     <string name="lbl_account">ACCCOUNT</string>

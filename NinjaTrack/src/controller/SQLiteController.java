@@ -39,7 +39,7 @@ public class SQLiteController {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			// Create Profile table
-			db.execSQL("CREATE TABLE Profile (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, age TEXT NOT NULL, contact_no INTEGER NOT NULL, email TEXT NOT NULL, start_date TEXT NOT NULL)");
+			db.execSQL("CREATE TABLE Profile (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, age TEXT NOT NULL, contact_no INTEGER NOT NULL, email TEXT NOT NULL, start_date TEXT NOT NULL, image TEXT)");
 		}
 
 		@Override
@@ -49,43 +49,46 @@ public class SQLiteController {
 		}
 	}
 	
-	public long createProfile(Profile profile) {
+	public void createProfile(Profile profile) {
 		ContentValues cv = new ContentValues();
 		cv.put("name", profile.getName());
 		cv.put("age", Utility.parseDateToString(profile.getAge(), Utility.FORMAT_DD_MMM_YYYY));
 		cv.put("contact_no", profile.getContactNo());
 		cv.put("email", profile.getEmail());
-		cv.put("start_date", Utility.parseDateToString(profile.getStartDate(), Utility.FORMAT_DD_MMM_YYYY));
+		cv.put("start_date", Utility.parseDateToString(Utility.getTodayDate(), Utility.FORMAT_DD_MMM_YYYY));
+		cv.put("image", profile.getImage());
 		
-		return database.insert("Profile", null, cv);
+		database.insert("Profile", null, cv);
 	}
 	
 	public Profile retrieveProfile() {
-		Profile user = new Profile();
+		Profile profile = new Profile();
 		
-		Cursor cursor = database.query("Profile", new String[] {"id", "name", "age", "contact_no", "email", "start_date"}, null, null, null, null, null, null);
+		Cursor cursor = database.query("Profile", new String[] {"id", "name", "age", "contact_no", "email", "start_date", "image"}, null, null, null, null, null, null);
 		if(cursor != null) {
 			if(cursor.moveToFirst()){
-				user.setId(cursor.getInt(cursor.getColumnIndex("id")));
-				user.setName(cursor.getString(cursor.getColumnIndex("name")));
-				user.setAge(Utility.parseDateFromString(cursor.getString(cursor.getColumnIndex("age")), Utility.FORMAT_DD_MMM_YYYY));
-				user.setContactNo(cursor.getInt(cursor.getColumnIndex("contact_no")));
-				user.setEmail(cursor.getString(cursor.getColumnIndex("email")));
-				user.setStartDate(Utility.parseDateFromString(cursor.getString(cursor.getColumnIndex("start_date")), Utility.FORMAT_DD_MMM_YYYY));
+				profile.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				profile.setName(cursor.getString(cursor.getColumnIndex("name")));
+				profile.setAge(Utility.parseDateFromString(cursor.getString(cursor.getColumnIndex("age")), Utility.FORMAT_DD_MMM_YYYY));
+				profile.setContactNo(cursor.getInt(cursor.getColumnIndex("contact_no")));
+				profile.setEmail(cursor.getString(cursor.getColumnIndex("email")));
+				profile.setStartDate(Utility.parseDateFromString(cursor.getString(cursor.getColumnIndex("start_date")), Utility.FORMAT_DD_MMM_YYYY));
+				profile.setImage(cursor.getString(cursor.getColumnIndex("image")));
 			}
 		}
 		
-		return user;
+		return profile;
 	}
 	
-	public long updateProfile(Profile profile) {
+	public void updateProfile(Profile profile) {
 		ContentValues cv = new ContentValues();
 		cv.put("name", profile.getName());
 		cv.put("age", Utility.parseDateToString(profile.getAge(), Utility.FORMAT_DD_MMM_YYYY));
 		cv.put("contact_no", profile.getContactNo());
 		cv.put("email", profile.getEmail());
 		cv.put("start_date", Utility.parseDateToString(profile.getStartDate(), Utility.FORMAT_DD_MMM_YYYY));
+		cv.put("image", profile.getImage());
 		
-		return database.update("Profile", cv, "id= " + profile.getId(), null);
+		database.update("Profile", cv, "id= " + profile.getId(), null);
 	}
 }

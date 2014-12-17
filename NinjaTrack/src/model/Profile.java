@@ -5,18 +5,19 @@ import java.util.GregorianCalendar;
 public class Profile {
 
 	private int id, contactNo;
-	private String name, email;
+	private String name, email, image;
 	private GregorianCalendar age, startDate;
 	
 	public Profile() {};
 	
-	public Profile(int id, String name, GregorianCalendar age, int contactNo, String email, GregorianCalendar startDate) {
+	public Profile(int id, String name, GregorianCalendar age, int contactNo, String email, GregorianCalendar startDate, String image) {
 		this.id = id;
 		this.name = name;
 		this.age = age;
 		this.contactNo = contactNo;
 		this.email = email;
 		this.startDate = startDate;
+		this.image = image;
 	}
 
 	public int getId() {
@@ -65,5 +66,13 @@ public class Profile {
 
 	public void setStartDate(GregorianCalendar startDate) {
 		this.startDate = startDate;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
 	}
 }

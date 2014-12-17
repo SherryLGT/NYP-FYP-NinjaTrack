@@ -165,7 +165,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		drawerItems.get(1).setIcon(R.drawable.icon_profile1);
 		drawerItems.get(2).setIcon(R.drawable.icon_setting1);
 		drawerItems.get(3).setIcon(R.drawable.icon_website1);
-		
+		position = 1;
 		switch (position) {
 			case 0: // Music
 				drawerItems.get(position).setIcon(R.drawable.icon_music2);

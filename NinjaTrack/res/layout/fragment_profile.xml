@@ -43,20 +43,31 @@
 	    
 	    <!-- Profile image -->
 	    <ImageView
-	        android:id="@+id/profile_image"
+	        android:id="@+id/iv_image"
 	        android:layout_width="160dp"
 	        android:layout_height="160dp"
+	        android:background="@drawable/border"
 	        android:layout_marginBottom="20dp"
 	        android:layout_centerHorizontal="true"
 	        android:contentDescription="@string/image"
 	        android:src="@drawable/icon_profile" />
+	    
+	    <ImageView
+	        android:id="@+id/iv_image_edit"
+	        android:layout_width="28dp"
+	        android:layout_height="28dp"
+	        android:layout_marginTop="2dp"
+	        android:layout_marginLeft="214dp"
+	        android:contentDescription="@string/image"
+	        android:src="@drawable/icon_camera"
+	        android:visibility="gone" />
 		
 	    <!-- Name -->
 	    <TextView
 	        android:id="@+id/lbl_name"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_below="@+id/profile_image"
+	        android:layout_below="@+id/iv_image"
 	        android:text="@string/lbl_name"
 	        android:textSize="@dimen/font_size" />
 	    
@@ -64,7 +75,7 @@
 	        android:id="@+id/tv_name"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:layout_below="@+id/profile_image"
+	        android:layout_below="@+id/iv_image"
 	        android:layout_toRightOf="@+id/lbl_name"
 	        android:layout_marginLeft="@dimen/profile_tv"
 	        android:textSize="@dimen/font_size" />
@@ -73,7 +84,7 @@
 	        android:id="@+id/et_name"
 	        android:layout_width="@dimen/profile_etw"
 	        android:layout_height="@dimen/profile_eth"
-	        android:layout_below="@+id/profile_image"
+	        android:layout_below="@+id/iv_image"
 	        android:layout_toRightOf="@+id/lbl_name"
 	        android:layout_marginLeft="@dimen/profile_et"
 	        android:singleLine="true"

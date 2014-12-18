@@ -10,6 +10,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,7 +43,6 @@ public class ProfileFragment extends Fragment {
 	private static int RESULT_LOAD_IMAGE = 1;
 	private String imagePath;
     BitmapFactory.Options bitmapOptions;
-    private Dialog dialog;
 	
 	public ProfileFragment(){}
 	
@@ -224,11 +224,12 @@ public class ProfileFragment extends Fragment {
 		iv_image.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				dialog = new Dialog(getActivity());
+				final Dialog dialog = new Dialog(getActivity());
 				dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-				View contentView = getActivity().getLayoutInflater().inflate(R.layout.image_dialog, null);
+				View contentView = getActivity().getLayoutInflater().inflate(R.layout.image_dialog, null);				
 				iv_dialog = (ImageView) contentView.findViewById(R.id.iv_dialog);
-				iv_dialog.setImageBitmap(BitmapFactory.decodeFile(imagePath, bitmapOptions));
+				Bitmap bitmap = (BitmapFactory.decodeFile(imagePath, bitmapOptions));
+				iv_dialog.setImageBitmap(bitmap);
 				dialog.setContentView(contentView);
 				dialog.show();
 				

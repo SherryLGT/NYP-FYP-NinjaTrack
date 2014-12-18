@@ -46,7 +46,6 @@
 	        android:id="@+id/iv_image"
 	        android:layout_width="160dp"
 	        android:layout_height="160dp"
-	        android:background="@drawable/border"
 	        android:layout_marginBottom="20dp"
 	        android:layout_centerHorizontal="true"
 	        android:contentDescription="@string/image"

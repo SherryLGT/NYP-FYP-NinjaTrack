@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="15dp"
@@ -68,17 +69,18 @@
 	    	android:inputType="textPassword"
 	    	android:hint="@string/hint_password" />
         
-        <Button
+        <com.beardedhen.androidbootstrap.BootstrapButton
             android:id="@+id/btn_login"
-		    android:layout_width="80dp"
-		    android:layout_height="36dp"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
 		    android:layout_below="@+id/et_password"
 		    android:layout_alignParentRight="true"
 		    android:layout_margin="15dp"
-		    android:background="@drawable/button_selector"
 		    android:text="@string/btn_login"
-		    android:textColor="@color/white"
-		    android:textSize="15sp" />
+		    bootstrapbutton:bb_size="small"
+            bootstrapbutton:bb_icon_left="fa-sign-in"
+            bootstrapbutton:bb_roundedCorners="true"
+            bootstrapbutton:bb_type="primary" />
     </RelativeLayout>
 	    
     <TextView
@@ -124,17 +126,18 @@
 	    	android:textColor="@color/bright_blue"
 	    	android:textStyle="bold" />
         
-        <Button
+        <com.beardedhen.androidbootstrap.BootstrapButton
             android:id="@+id/btn_reconnect"
-		    android:layout_width="80dp"
-		    android:layout_height="36dp"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
 		    android:layout_below="@+id/tv_ninjatrack"
 		    android:layout_alignParentRight="true"
 		    android:layout_margin="15dp"
-		    android:background="@drawable/button_selector"
 		    android:text="@string/btn_reconnect"
-		    android:textColor="@color/white"
-		    android:textSize="15sp" />
+            bootstrapbutton:bb_size="small"
+            bootstrapbutton:bb_icon_left="fa-retweet"
+            bootstrapbutton:bb_roundedCorners="true"
+            bootstrapbutton:bb_type="primary" />
     </RelativeLayout>
 
 </RelativeLayout>

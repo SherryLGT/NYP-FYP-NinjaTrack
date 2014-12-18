@@ -6,6 +6,7 @@ import java.util.GregorianCalendar;
 import model.Profile;
 import nyp.fypj.ninjatrack.R;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -18,11 +19,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import controller.SQLiteController;
 import controller.Utility;
 
@@ -30,8 +31,9 @@ public class ProfileFragment extends Fragment {
 	
 	private TextView tv_name, tv_age, tv_contact_no, tv_email, tv_start_date;
 	private EditText et_name, et_age, et_contact_no, et_email;
-	private ImageView iv_image, iv_image_edit;
+	private ImageView iv_image, iv_image_edit, iv_dialog;
 	private ImageButton btn_edit, btn_done;
+	
 	private SQLiteController controller;
 	private Profile profile;
 	private int year, month, day;
@@ -40,6 +42,7 @@ public class ProfileFragment extends Fragment {
 	private static int RESULT_LOAD_IMAGE = 1;
 	private String imagePath;
     BitmapFactory.Options bitmapOptions;
+    private Dialog dialog;
 	
 	public ProfileFragment(){}
 	
@@ -221,8 +224,21 @@ public class ProfileFragment extends Fragment {
 		iv_image.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				Toast.makeText(getActivity(), "VIEW", Toast.LENGTH_SHORT).show();
-			}
+				dialog = new Dialog(getActivity());
+				dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+				View contentView = getActivity().getLayoutInflater().inflate(R.layout.image_dialog, null);
+				iv_dialog = (ImageView) contentView.findViewById(R.id.iv_dialog);
+				iv_dialog.setImageBitmap(BitmapFactory.decodeFile(imagePath, bitmapOptions));
+				dialog.setContentView(contentView);
+				dialog.show();
+				
+				iv_dialog.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						dialog.dismiss();
+					}
+				});
+			} 
 		});
 	}
 }

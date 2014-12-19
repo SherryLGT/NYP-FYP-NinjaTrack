@@ -187,7 +187,7 @@ public class ProfileFragment extends Fragment {
         }
 	}
 
-	private void defaultView(Profile profile) {		
+	private void defaultView(Profile profile) {
         tv_name.setText(profile.getName());
         tv_age.setText(Utility.parseDateToString(profile.getAge(), Utility.FORMAT_DD_MMM_YYYY));
         tv_contact_no.setText(Integer.toString(profile.getContactNo()));

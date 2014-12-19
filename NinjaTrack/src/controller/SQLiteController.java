@@ -23,7 +23,8 @@ public class SQLiteController {
 	public SQLiteController open() throws SQLException {
 		helper = new DBHelper(context);
 		database = helper.getWritableDatabase();
-		
+//		Profile profile = new Profile("Winnie", Utility.parseDateFromString("6/10/1997", Utility.FORMAT_DD_MMM_YYYY), 65501675, "winnie@outlook.com", Utility.parseDateFromString("12/11/2014", Utility.FORMAT_DD_MMM_YYYY), "");
+//		createProfile(profile);
 		return this;
 	}
 	

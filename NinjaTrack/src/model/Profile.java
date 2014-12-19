@@ -10,6 +10,15 @@ public class Profile {
 	
 	public Profile() {};
 	
+	public Profile(String name, GregorianCalendar age, int contactNo, String email, GregorianCalendar startDate, String image) {
+		this.name = name;
+		this.age = age;
+		this.contactNo = contactNo;
+		this.email = email;
+		this.startDate = startDate;
+		this.image = image;
+	}
+	
 	public Profile(int id, String name, GregorianCalendar age, int contactNo, String email, GregorianCalendar startDate, String image) {
 		this.id = id;
 		this.name = name;

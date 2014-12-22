@@ -5,6 +5,7 @@ import java.util.GregorianCalendar;
 
 import model.Profile;
 import nyp.fypj.ninjatrack.R;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 import controller.SQLiteController;
 import controller.Utility;
 
+@SuppressLint("InflateParams")
 public class ProfileFragment extends Fragment {
 	
 	private TextView tv_name, tv_age, tv_contact_no, tv_email, tv_start_date;

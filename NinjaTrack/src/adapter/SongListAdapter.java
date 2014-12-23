@@ -3,12 +3,9 @@ package adapter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import nyp.fypj.ninjatrack.R;
-
 import model.Song;
-
+import nyp.fypj.ninjatrack.R;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +15,15 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-@SuppressLint("ViewHolder")
+@SuppressLint({ "ViewHolder", "InflateParams" })
 public class SongListAdapter extends BaseAdapter {
 	
 	private Context context;
 	private ArrayList<Song> songs;
 	private LayoutInflater inflater;
+	
+	private TextView tv_title, tv_duration;
+	private ImageView btn_pp;
 	
 	public SongListAdapter(Context context, ArrayList<Song> songs) {
 		this.context = context;
@@ -45,14 +45,14 @@ public class SongListAdapter extends BaseAdapter {
 	public long getItemId(int position) {
 		return position;
 	}
-
+	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.song_list_item, null);
-        TextView tv_title = (TextView) layout.findViewById(R.id.tv_title);
-        TextView tv_duration = (TextView) layout.findViewById(R.id.tv_duration);
-        ImageView iv_button = (ImageView) layout.findViewById(R.id.iv_button);
+        tv_title = (TextView) layout.findViewById(R.id.tv_title);
+        tv_duration = (TextView) layout.findViewById(R.id.tv_duration);
+        btn_pp = (ImageView) layout.findViewById(R.id.btn_pp);
         
         Song currentSong = songs.get(position);
         tv_title.setText(currentSong.getTitle());

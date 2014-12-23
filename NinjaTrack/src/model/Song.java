@@ -3,19 +3,21 @@ package model;
 public class Song {
 
 	private int id, duration;
-	private String title;
+	private String title, data;
 	
 	public Song() {};
 	
-	public Song(String title, int duration) {
+	public Song(String title, int duration, String data) {
 		this.title = title;
 		this.duration = duration;
+		this.data = data;
 	}
 	
-	public Song(int id, String title, int duration) {
+	public Song(int id, String title, int duration, String data) {
 		this.id = id;
 		this.title = title;
 		this.duration = duration;
+		this.data = data;
 	}
 
 	public int getId() {
@@ -40,5 +42,13 @@ public class Song {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
 	}
 }

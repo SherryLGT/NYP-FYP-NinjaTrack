@@ -1,19 +1,22 @@
 package model;
 
+import android.content.res.AssetFileDescriptor;
+
 public class Song {
 
 	private int id, duration;
-	private String title, data;
+	private String title;
+	private AssetFileDescriptor data;
 	
 	public Song() {};
 	
-	public Song(String title, int duration, String data) {
+	public Song(String title, int duration, AssetFileDescriptor data) {
 		this.title = title;
 		this.duration = duration;
 		this.data = data;
 	}
 	
-	public Song(int id, String title, int duration, String data) {
+	public Song(int id, String title, int duration, AssetFileDescriptor data) {
 		this.id = id;
 		this.title = title;
 		this.duration = duration;
@@ -44,11 +47,11 @@ public class Song {
 		this.title = title;
 	}
 
-	public String getData() {
+	public AssetFileDescriptor getData() {
 		return data;
 	}
 
-	public void setData(String data) {
+	public void setData(AssetFileDescriptor data) {
 		this.data = data;
 	}
 }

@@ -55,7 +55,7 @@ public class MusicFragment extends SherlockFragment{
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		fl.setLayoutParams(params);
 		
-		switch(position) { 
+		switch(position) {
 			case 0:
 				View recorderView = inflater.inflate(R.layout.tab_recorder, null);
 				fl.addView(recorderView);

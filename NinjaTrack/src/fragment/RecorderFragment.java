@@ -1,6 +1,8 @@
 package fragment;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,9 +12,12 @@ import model.Song;
 import nyp.fypj.ninjatrack.R;
 import adapter.SongListAdapter;
 import android.content.ContentResolver;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -33,7 +38,7 @@ public class RecorderFragment extends Fragment {
 	private ListView lv_song;
 	
 	private ArrayList<Song> songList;
-	SongListAdapter adapter;
+	private SongListAdapter adapter;
 	private HashMap<String, MediaPlayer> mediaList;
 	
 	public RecorderFragment(){}
@@ -49,34 +54,70 @@ public class RecorderFragment extends Fragment {
         
         // Retrieve all the songs and sort accordingly
         getSongList();
-        mediaList = new HashMap<String, MediaPlayer>();
         Collections.sort(songList, new Comparator<Song>() {
 			@Override
 			public int compare(Song a, Song b) {
 				return a.getTitle().compareTo(b.getTitle());
 			}
         });
-        
+
+        mediaList = new HashMap<String, MediaPlayer>();
         adapter = new SongListAdapter(getActivity().getApplicationContext(), songList);
         lv_song.setAdapter(adapter);
+        
         lv_song.setOnItemClickListener(new OnItemClickListener(){
 			@Override
-			public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-				Song selectedSong = songList.get(position);
+			public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+				final ImageView btn_pp = (ImageView) view.findViewById(R.id.btn_pp);
+				final Song selectedSong = songList.get(position);
 				
+				// Check selected
 				if(mediaList.keySet().contains(selectedSong.getTitle())){
 					MediaPlayer mediaPlayer = mediaList.get(selectedSong.getTitle());
-					mediaPlayer.stop();
-					mediaList.remove(selectedSong.getTitle());
 					
-					ImageView btn_pp = (ImageView) view.findViewById(R.id.btn_pp);
-					btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_play));
+					// Pause playing
+					if(mediaPlayer.isPlaying()) {						
+						mediaPlayer.pause();
+//						mediaPlayer.stop();
+//						mediaList.remove(selectedSong.getTitle());
+						
+						btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_play));
+					}
+					// Resume playing
+					else {
+						mediaPlayer.start();
+						
+						btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_pause));
+					}
 				}
+				// Play new song
 				else{
 					MediaPlayer mediaPlayer = new MediaPlayer();
 					try {
 						mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-						mediaPlayer.setDataSource(selectedSong.getData());
+						mediaPlayer.setDataSource(selectedSong.getData().getFileDescriptor(), selectedSong.getData().getStartOffset(), selectedSong.getData().getLength());
+//						mediaPlayer.setDataSource(selectedSong.getData());
+						mediaPlayer.setOnCompletionListener(new OnCompletionListener() {
+							@Override
+							public void onCompletion(MediaPlayer mediaPlayer) {
+								mediaPlayer.reset();
+								try {
+									mediaPlayer.setDataSource(selectedSong.getData().getFileDescriptor(), selectedSong.getData().getStartOffset(), selectedSong.getData().getLength());
+									mediaPlayer.prepare();
+									mediaPlayer.start();
+								} catch (IllegalArgumentException e) {
+									e.printStackTrace();
+								} catch (IllegalStateException e) {
+									e.printStackTrace();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+//								mediaPlayer.stop();
+//								mediaList.remove(selectedSong.getTitle());
+//								
+//								btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_play));
+							}
+						});
 						mediaPlayer.prepare();
 						mediaPlayer.start();
 						mediaList.put(selectedSong.getTitle(), mediaPlayer);
@@ -90,11 +131,9 @@ public class RecorderFragment extends Fragment {
 						e.printStackTrace();
 					}
 					
-					ImageView btn_pp = (ImageView) view.findViewById(R.id.btn_pp);
 					btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_pause));
 				}
 			}
-        	
         });
         
         progress_bar.setProgress(20);
@@ -106,24 +145,43 @@ public class RecorderFragment extends Fragment {
 	
 	private void getSongList() {
 		songList = new ArrayList<Song>();
+		String[] songNames;
 		
-		ContentResolver musicResolver = getActivity().getContentResolver();
-		Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-		Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-		
-		if(musicCursor != null && musicCursor.moveToFirst()) {
-			int idColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-			int titleColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
-			int durationColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DURATION);
-			int dataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
-			
-			do {
-				int id = musicCursor.getInt(idColumn);
-				String title = musicCursor.getString(titleColumn);
-				int duration = Integer.parseInt(musicCursor.getString(durationColumn));
-				String data = musicCursor.getString(dataColumn);
-				songList.add(new Song(id, title, duration, data));
-			} while(musicCursor.moveToNext());
+		AssetManager assetManager = getActivity().getAssets();
+		try {
+			songNames = assetManager.list("drum");
+			for(int i = 0; i < songNames.length; i++) {
+				String title = songNames[i];
+				AssetFileDescriptor data = getActivity().getAssets().openFd("drum/" + songNames[i]);				
+				MediaPlayer mediaPlayer = new MediaPlayer();
+				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+				mediaPlayer.setDataSource(data.getFileDescriptor(), data.getStartOffset(), data.getLength());
+				mediaPlayer.prepare();
+				int duration = mediaPlayer.getDuration();
+				songList.add(new Song(title, duration, data));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		
+		// Retrieve all song files
+//		ContentResolver musicResolver = getActivity().getContentResolver();
+//		Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+//		Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+//		
+//		if(musicCursor != null && musicCursor.moveToFirst()) {
+//			int idColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
+//			int titleColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
+//			int durationColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DURATION);
+//			int dataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
+//			
+//			do {
+//				int id = musicCursor.getInt(idColumn);
+//				String title = musicCursor.getString(titleColumn);
+//				int duration = Integer.parseInt(musicCursor.getString(durationColumn));
+//				String data = musicCursor.getString(dataColumn);
+//				songList.add(new Song(id, title, duration, data));
+//			} while(musicCursor.moveToNext());
+//		}
 	}
 }

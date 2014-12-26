@@ -76,7 +76,7 @@ public class RecorderFragment extends Fragment {
 					MediaPlayer mediaPlayer = mediaList.get(selectedSong.getTitle());
 					
 					// Pause playing
-					if(mediaPlayer.isPlaying()) {						
+					if(mediaPlayer.isPlaying()) {
 						mediaPlayer.pause();
 //						mediaPlayer.stop();
 //						mediaList.remove(selectedSong.getTitle());

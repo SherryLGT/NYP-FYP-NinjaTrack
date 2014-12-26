@@ -1,8 +1,6 @@
 package fragment;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,14 +9,11 @@ import java.util.HashMap;
 import model.Song;
 import nyp.fypj.ninjatrack.R;
 import adapter.SongListAdapter;
-import android.content.ContentResolver;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -46,7 +41,7 @@ public class RecorderFragment extends Fragment {
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
  
-        View rootView = inflater.inflate(R.layout.fragment_recorder, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_instrument, container, false);
         progress_bar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
         start_time = (TextView) rootView.findViewById(R.id.start_time);
         end_time = (TextView) rootView.findViewById(R.id.end_time);
@@ -149,10 +144,10 @@ public class RecorderFragment extends Fragment {
 		
 		AssetManager assetManager = getActivity().getAssets();
 		try {
-			songNames = assetManager.list("drum");
+			songNames = assetManager.list("recorder");
 			for(int i = 0; i < songNames.length; i++) {
 				String title = songNames[i];
-				AssetFileDescriptor data = getActivity().getAssets().openFd("drum/" + songNames[i]);				
+				AssetFileDescriptor data = getActivity().getAssets().openFd("recorder/" + songNames[i]);				
 				MediaPlayer mediaPlayer = new MediaPlayer();
 				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 				mediaPlayer.setDataSource(data.getFileDescriptor(), data.getStartOffset(), data.getLength());

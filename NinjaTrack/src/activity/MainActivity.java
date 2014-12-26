@@ -40,6 +40,7 @@ import fragment.WebsiteFragment;
 
 @SuppressWarnings("deprecation")
 public class MainActivity extends SherlockFragmentActivity {
+	
 	private DrawerLayout drawerLayout;
 	private ListView drawerList;
 	private ActionBarDrawerToggle drawerToggle;

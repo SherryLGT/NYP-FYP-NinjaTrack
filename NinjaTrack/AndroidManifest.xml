@@ -40,6 +40,10 @@
         <activity
             android:name="activity.MainActivity">
         </activity>
+
+        <service
+            android:name="controller.RBLService"
+            android:enabled="true" />
     </application>
 
 </manifest>

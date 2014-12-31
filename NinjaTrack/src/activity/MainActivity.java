@@ -19,7 +19,11 @@ package activity;
 import java.util.ArrayList;
 
 import model.NavDrawerItem;
+import nyp.fypj.ninjatrack.R;
 import adapter.NavDrawerListAdapter;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -31,7 +35,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import nyp.fypj.ninjatrack.R;
 
 import fragment.PageSlidingTabStripFragment;
 import fragment.ProfileFragment;
@@ -158,6 +161,30 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggles
 		drawerToggle.onConfigurationChanged(newConfig);
+	}
+
+	@Override
+	public void onBackPressed() {
+		AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+		dialog.setMessage("Quit Ninja?")
+			.setPositiveButton("Quit", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					Intent intent = new Intent(Intent.ACTION_MAIN); 
+					intent.addCategory(Intent.CATEGORY_HOME); 
+					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
+					startActivity(intent); 
+					finish();
+				}
+			})
+			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			});
+		
+		dialog.create().show();
 	}
 
 	private void selectItem(int position) {

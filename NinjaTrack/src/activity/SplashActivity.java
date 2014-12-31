@@ -94,8 +94,6 @@ public class SplashActivity extends Activity {
 	        		startActivity(intent);
 	        	}
 	        }, SCAN_PERIOD);
-//			Intent intent = new Intent(SplashActivity.this, DeviceListActivity.class);
-//			startActivity(intent);
 		} else {
 			mBluetoothLeService.disconnect();
 			mBluetoothLeService.close();
@@ -218,6 +216,6 @@ public class SplashActivity extends Activity {
 			unbindService(mServiceConnection);
 		}
 		
-		System.exit(0);
+		//System.exit(0);
 	}
 }

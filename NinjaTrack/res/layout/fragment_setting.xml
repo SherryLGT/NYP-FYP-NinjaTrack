@@ -122,6 +122,7 @@
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:layout_toRightOf="@+id/lbl_ninjatrack"
+		    android:layout_marginBottom="15dp"
 	    	android:textSize="@dimen/font_size"
 	    	android:textColor="@color/bright_blue"
 	    	android:textStyle="bold" />
@@ -132,7 +133,9 @@
 		    android:layout_height="wrap_content"
 		    android:layout_below="@+id/tv_ninjatrack"
 		    android:layout_alignParentRight="true"
-		    android:layout_margin="15dp"
+		    android:layout_marginRight="15dp"
+		    android:layout_marginLeft="15dp"
+		    android:layout_marginBottom="15dp"
 		    android:text="@string/btn_reconnect"
             bootstrapbutton:bb_size="small"
             bootstrapbutton:bb_icon_left="fa-retweet"

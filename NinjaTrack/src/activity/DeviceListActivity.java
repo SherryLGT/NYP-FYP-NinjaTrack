@@ -17,10 +17,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 public class DeviceListActivity extends Activity {
 
+	private BluetoothDevice mDevice;
 	private ArrayList<BluetoothDevice> devices;
 	private List<Map<String, String>> listItems = new ArrayList<Map<String, String>>();
 	private SimpleAdapter adapter;
@@ -29,8 +29,6 @@ public class DeviceListActivity extends Activity {
 	private String DEVICE_NAME = "name";
 	private String DEVICE_ADDRESS = "address";
 	public static final int RESULT_CODE = 31;
-	public final static String EXTRA_DEVICE_ADDRESS = "EXTRA_DEVICE_ADDRESS";
-	public final static String EXTRA_DEVICE_NAME = "EXTRA_DEVICE_NAME";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +42,8 @@ public class DeviceListActivity extends Activity {
 		devices = (ArrayList<BluetoothDevice>) SplashActivity.mLeDeviceList;
 		for (BluetoothDevice device : devices) {
 			map = new HashMap<String, String>();
-			map.put(DEVICE_NAME, device.getName());
 			map.put(DEVICE_ADDRESS, device.getAddress());
+			map.put(DEVICE_NAME, device.getName());
 			listItems.add(map);
 		}
 
@@ -59,19 +57,18 @@ public class DeviceListActivity extends Activity {
 			public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 				HashMap<String, String> hashMap = (HashMap<String, String>) listItems.get(position);
 				String addr = hashMap.get(DEVICE_ADDRESS);
-//				String name = hashMap.get(DEVICE_NAME);
+				
+				for (BluetoothDevice device : devices) {
+					if(device.getAddress().equals(addr)) {
+						mDevice = device;
+					}
+				}
 				
 				SplashActivity.mBluetoothLeService.connect(addr);
-				Toast.makeText(getApplication(), "Connected", Toast.LENGTH_SHORT).show();
 				Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
+				intent.putExtra("device", mDevice);
 				startActivity(intent);
 				finish();
-				
-//				Intent intent = new Intent();
-//				intent.putExtra(EXTRA_DEVICE_ADDRESS, addr);
-//				intent.putExtra(EXTRA_DEVICE_NAME, name);
-//				setResult(RESULT_CODE, intent);
-//				finish();
 			}
 		});
 	}

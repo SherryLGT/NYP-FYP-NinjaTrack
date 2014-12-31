@@ -22,6 +22,7 @@ import model.NavDrawerItem;
 import nyp.fypj.ninjatrack.R;
 import adapter.NavDrawerListAdapter;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -56,11 +57,15 @@ public class MainActivity extends SherlockFragmentActivity {
 	
 	private ArrayList<NavDrawerItem> drawerItems;
 	private NavDrawerListAdapter adapter;
-
+	
+	public static BluetoothDevice device;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		device = (BluetoothDevice) getIntent().getExtras().get("device");
 		
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerList = (ListView) findViewById(R.id.left_drawer);

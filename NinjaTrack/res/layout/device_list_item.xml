@@ -2,21 +2,24 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="5dp"
     android:orientation="vertical" >
     
     <TextView
-        android:id="@+id/deviceName"
+        android:id="@+id/tv_device_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#000"
+        android:paddingTop="5dp"
+        android:paddingLeft="10dp"
+        android:textColor="@color/black"
         android:textSize="25sp" />
     
     <TextView
-        android:id="@+id/deviceAddr"
+        android:id="@+id/tv_device_address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#000"
+        android:paddingLeft="10dp"
+        android:paddingBottom="5dp"
+        android:textColor="@color/black"
         android:textSize="12sp" />
 
 </LinearLayout>

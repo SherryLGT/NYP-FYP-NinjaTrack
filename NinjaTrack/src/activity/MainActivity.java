@@ -175,10 +175,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			.setPositiveButton("Quit", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					Intent intent = new Intent(Intent.ACTION_MAIN); 
-					intent.addCategory(Intent.CATEGORY_HOME); 
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
-					startActivity(intent); 
+					Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					intent.putExtra("EXIT", true);
+					startActivity(intent);
 					finish();
 				}
 			})

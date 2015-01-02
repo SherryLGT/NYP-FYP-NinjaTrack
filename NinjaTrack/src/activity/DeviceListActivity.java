@@ -12,6 +12,9 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -25,11 +28,13 @@ public class DeviceListActivity extends Activity {
 	private List<Map<String, String>> listItems = new ArrayList<Map<String, String>>();
 	private SimpleAdapter adapter;
 	private Map<String, String> map = null;
+	private SwipeRefreshLayout swipeLayout;
 	private ListView listView;
 	private String DEVICE_NAME = "name";
 	private String DEVICE_ADDRESS = "address";
 	public static final int RESULT_CODE = 31;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -37,7 +42,26 @@ public class DeviceListActivity extends Activity {
 
 		setTitle("Select a Device");
 
-		listView = (ListView) findViewById(R.id.listView);
+		swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+		swipeLayout.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				new Handler().postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						swipeLayout.setRefreshing(false);
+					}
+				}, 3000);
+			}
+		});
+		swipeLayout.setColorScheme(
+				android.R.color.holo_blue_bright, 
+	            android.R.color.holo_green_light, 
+	            android.R.color.holo_orange_light, 
+	            android.R.color.holo_red_light
+	    );
+		
+		listView = (ListView) findViewById(R.id.lv_devices);
 
 		devices = (ArrayList<BluetoothDevice>) SplashActivity.mLeDeviceList;
 		for (BluetoothDevice device : devices) {
@@ -49,7 +73,7 @@ public class DeviceListActivity extends Activity {
 
 		adapter = new SimpleAdapter(getApplicationContext(), listItems,
 				R.layout.device_list_item, new String[] { "name", "address" },
-				new int[] { R.id.deviceName, R.id.deviceAddr });
+				new int[] { R.id.tv_device_name, R.id.tv_device_address });
 		adapter.notifyDataSetChanged();
 		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(new OnItemClickListener() {
@@ -80,10 +104,10 @@ public class DeviceListActivity extends Activity {
 			.setPositiveButton("Quit", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					Intent intent = new Intent(Intent.ACTION_MAIN); 
-					intent.addCategory(Intent.CATEGORY_HOME); 
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
-					startActivity(intent); 
+					Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					intent.putExtra("EXIT", true);
+					startActivity(intent);
 					finish();
 				}
 			})

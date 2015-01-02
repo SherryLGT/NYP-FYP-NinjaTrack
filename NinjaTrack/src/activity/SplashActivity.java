@@ -53,6 +53,16 @@ public class SplashActivity extends Activity {
 		Intent gattServiceIntent = new Intent(SplashActivity.this, RBLService.class);
 		bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 		
+		// Ensures that application closes
+		if (getIntent().getBooleanExtra("EXIT", false)) {
+		    finish();
+		}
+	}
+    
+    @Override
+	protected void onResume() {
+		super.onResume();
+		
 		// Ensures Bluetooth status
 		if (!mBluetoothAdapter.isEnabled()) {
 		    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -61,12 +71,6 @@ public class SplashActivity extends Activity {
 		else {
 			startScan();
 		}
-	}
-    
-    @Override
-	protected void onResume() {
-		super.onResume();
-		
 		registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 	}
 
@@ -91,6 +95,7 @@ public class SplashActivity extends Activity {
 	        	@Override
 	        	public void run() {
 	        		Intent intent = new Intent(SplashActivity.this, DeviceListActivity.class);
+	        		intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 	        		startActivity(intent);
 	        	}
 	        }, SCAN_PERIOD);
@@ -113,9 +118,6 @@ public class SplashActivity extends Activity {
 	        } else if (RBLService.ACTION_GATT_DISCONNECTED.equals(action)) {
 	        	flag = false;
 	            mConnected = false;
-	        } else if (RBLService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-	            // Show all the supported services and characteristics on the user interface
-	            // displayGattServices(RBLService.getSupportedGattServices());
 	        } else if (RBLService.ACTION_DATA_AVAILABLE.equals(action)) {
 	            // displayData(intent.getStringExtra(RBLService.EXTRA_DATA));
 	        }

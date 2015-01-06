@@ -21,10 +21,6 @@ import java.util.ArrayList;
 import model.NavDrawerItem;
 import nyp.fypj.ninjatrack.R;
 import adapter.NavDrawerListAdapter;
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothDevice;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -57,16 +53,12 @@ public class MainActivity extends SherlockFragmentActivity {
 	
 	private ArrayList<NavDrawerItem> drawerItems;
 	private NavDrawerListAdapter adapter;
-	
-	public static BluetoothDevice device;
-	
+		
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		device = (BluetoothDevice) getIntent().getExtras().get("device");
-		
+				
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerList = (ListView) findViewById(R.id.left_drawer);
 		navTitles = getResources().getStringArray(R.array.drawer_titles);
@@ -166,30 +158,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggles
 		drawerToggle.onConfigurationChanged(newConfig);
-	}
-
-	@Override
-	public void onBackPressed() {
-		AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-		dialog.setMessage("Quit Ninja?")
-			.setPositiveButton("Quit", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
-					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					intent.putExtra("EXIT", true);
-					startActivity(intent);
-					finish();
-				}
-			})
-			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.cancel();
-				}
-			});
-		
-		dialog.create().show();
 	}
 
 	private void selectItem(int position) {

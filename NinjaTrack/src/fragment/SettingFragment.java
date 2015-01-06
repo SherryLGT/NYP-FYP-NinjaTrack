@@ -1,9 +1,8 @@
 package fragment;
 
+import model.Device;
 import nyp.fypj.ninjatrack.R;
-import activity.MainActivity;
-import activity.SplashActivity;
-import android.bluetooth.BluetoothDevice;
+import activity.DeviceListActivity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -21,14 +20,14 @@ public class SettingFragment extends Fragment {
 	private TextView tv_ninjatrack;
 	private BootstrapButton btn_login, btn_reconnect;
 	
-	private BluetoothDevice device;
+	private Device device;
 	
 	public SettingFragment(){}
 	
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
  
-		device = MainActivity.device;
+		device = DeviceListActivity.device;
 		
         View rootView = inflater.inflate(R.layout.fragment_setting, container, false);
         
@@ -41,6 +40,14 @@ public class SettingFragment extends Fragment {
         if(device != null) {
         	tv_ninjatrack.setText("Connected");
         	btn_reconnect.setVisibility(View.GONE);
+        	
+        	tv_ninjatrack.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					PinFragment fragment = new PinFragment(device, DeviceListActivity.redBearService);
+					getActivity().getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+				}
+        	});
         }
         else {
         	tv_ninjatrack.setText("Not connected");
@@ -49,10 +56,9 @@ public class SettingFragment extends Fragment {
         btn_reconnect.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if(SplashActivity.mBluetoothLeService.connect(device.getAddress())) {
-		        	tv_ninjatrack.setText("Connected");
-		        	btn_reconnect.setVisibility(View.GONE);
-				}
+				DeviceListActivity.redBearService.connectDevice(device.getAddress(), false);
+	        	tv_ninjatrack.setText("Connected");
+	        	btn_reconnect.setVisibility(View.GONE);
 			}
         });
         

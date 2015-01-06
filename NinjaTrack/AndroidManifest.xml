@@ -39,7 +39,7 @@
         </activity>
 
         <service
-            android:name="controller.RBLService"
+            android:name="redbearservice.RedBearService"
             android:enabled="true" />
     </application>
 

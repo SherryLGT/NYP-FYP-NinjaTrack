@@ -5,14 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import model.Device;
 import nyp.fypj.ninjatrack.R;
+import redbearservice.IRedBearServiceEventListener;
+import redbearservice.RedBearService;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothDevice;
-import android.content.DialogInterface;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.View;
@@ -22,30 +27,48 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 public class DeviceListActivity extends Activity {
-
-	private BluetoothDevice mDevice;
-	private ArrayList<BluetoothDevice> devices;
-	private List<Map<String, String>> listItems = new ArrayList<Map<String, String>>();
-	private SimpleAdapter adapter;
+	
+	public static RedBearService redBearService;
+	private ArrayList<Device> deviceList;
 	private Map<String, String> map = null;
-	private SwipeRefreshLayout swipeLayout;
-	private ListView listView;
+	private List<Map<String, String>> listItems;
 	private String DEVICE_NAME = "name";
 	private String DEVICE_ADDRESS = "address";
-	public static final int RESULT_CODE = 31;
+	public static Device device;
 
+    private final long SCAN_PERIOD = 3000; // 3 seconds
+	
+	private SwipeRefreshLayout swipeLayout;
+	private ListView listView;
+	private SimpleAdapter adapter;
+	
+	public RedBearService getRedBearService() {
+		return redBearService;
+	}
+    
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.device_list);
-
+		
+		// Setting up RedBearService
+		Intent serviceIntent = new Intent(DeviceListActivity.this, RedBearService.class);
+		bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+		
 		setTitle("Select a Device");
-
+		
 		swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+		listView = (ListView) findViewById(R.id.lv_devices);
+		
+		deviceList = new ArrayList<Device>();
+		listItems = new ArrayList<Map<String, String>>();
+		
 		swipeLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh() {
+				RefreshTask refreshTask = new RefreshTask();
+				refreshTask.execute();
 				new Handler().postDelayed(new Runnable() {
 					@Override
 					public void run() {
@@ -61,63 +84,140 @@ public class DeviceListActivity extends Activity {
 	            android.R.color.holo_red_light
 	    );
 		
-		listView = (ListView) findViewById(R.id.lv_devices);
-
-		devices = (ArrayList<BluetoothDevice>) SplashActivity.mLeDeviceList;
-		for (BluetoothDevice device : devices) {
-			map = new HashMap<String, String>();
-			map.put(DEVICE_ADDRESS, device.getAddress());
-			map.put(DEVICE_NAME, device.getName());
-			listItems.add(map);
-		}
-
-		adapter = new SimpleAdapter(getApplicationContext(), listItems,
-				R.layout.device_list_item, new String[] { "name", "address" },
-				new int[] { R.id.tv_device_name, R.id.tv_device_address });
-		adapter.notifyDataSetChanged();
-		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-				HashMap<String, String> hashMap = (HashMap<String, String>) listItems.get(position);
-				String addr = hashMap.get(DEVICE_ADDRESS);
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				device = deviceList.get(position);
+				redBearService.connectDevice(device.getAddress(), false);
 				
-				for (BluetoothDevice device : devices) {
-					if(device.getAddress().equals(addr)) {
-						mDevice = device;
-					}
-				}
-				
-				SplashActivity.mBluetoothLeService.connect(addr);
 				Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
-				intent.putExtra("device", mDevice);
 				startActivity(intent);
-				finish();
 			}
 		});
 	}
-
+	
 	@Override
-	public void onBackPressed() {
-		AlertDialog.Builder dialog = new AlertDialog.Builder(DeviceListActivity.this);
-		dialog.setMessage("Quit Ninja?")
-			.setPositiveButton("Quit", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
-					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					intent.putExtra("EXIT", true);
-					startActivity(intent);
-					finish();
-				}
-			})
-			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.cancel();
-				}
-			});
+	protected void onDestroy() {
+		super.onDestroy();
 		
-		dialog.create().show();
+		unbindService(serviceConnection);
+	}
+
+	/** Service Connection **/
+	private ServiceConnection serviceConnection = new ServiceConnection() {
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			redBearService = ((RedBearService.LocalBinder) service).getService();
+			
+			if(redBearService != null) {
+				if(deviceList != null) {
+					deviceList.clear();
+				}
+				redBearService.setListener(redBearServiceEventListener);
+				redBearService.startScanDevice();
+				
+		        new Handler().postDelayed(new Runnable(){
+		        	@Override
+		        	public void run() {
+		        		if(redBearService != null) {
+		        			redBearService.stopScanDevice();
+		        			for (Device device : deviceList) {
+		        				map = new HashMap<String, String>();
+		        				map.put(DEVICE_ADDRESS, device.getAddress());
+		        				map.put(DEVICE_NAME, device.getName());
+		        				listItems.add(map);
+		        			}
+
+		        			adapter = new SimpleAdapter(getApplicationContext(), listItems,
+		        					R.layout.device_list_item, new String[] { "name", "address" },
+		        					new int[] { R.id.tv_device_name, R.id.tv_device_address });
+		        			listView.setAdapter(adapter);
+		        		}
+		        	}
+		        }, SCAN_PERIOD);
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			redBearService = null;
+		}
+	};
+	
+	/** Service Listener **/
+	private IRedBearServiceEventListener redBearServiceEventListener = new IRedBearServiceEventListener() {
+
+		@Override
+		public void onDeviceFound(String address, String name, int rssi, int bondState, byte[] scanRecord, ParcelUuid[] uuids) {
+			Device newDevice = new Device();
+			newDevice.setAddress(address);
+			newDevice.setName(name);
+			newDevice.setRssi(rssi);
+			newDevice.setBondState(bondState);
+			newDevice.setScanReadData(scanRecord);
+			newDevice.setUuids(uuids);
+			
+			for(Device tempDevice : deviceList) {
+				if(tempDevice.getAddress().equals(newDevice.getAddress())) {
+					tempDevice.setRssi(device.getRssi());
+					runOnUiThread(new Runnable() {
+
+						@Override
+						public void run() {
+							if (adapter != null) {
+								adapter.notifyDataSetChanged();
+							}
+						}
+					});
+				}
+			}
+			deviceList.add(newDevice);
+		}
+
+		@Override
+		public void onDeviceRssiUpdate(String deviceAddress, int rssi, int state) {}
+
+		@Override
+		public void onDeviceConnectStateChange(String deviceAddress, int state) {}
+
+		@Override
+		public void onDeviceReadValue(int[] value) {}
+
+		@Override
+		public void onDeviceCharacteristicFound() {}
+	};
+	
+	/** Refreshing **/
+	class RefreshTask extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			
+			deviceList.clear();
+			if (redBearService != null) {
+				redBearService.stopScanDevice();
+				redBearService.startScanDevice();
+			}
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			try {
+				Thread.sleep(2000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			if (redBearService != null) {
+				redBearService.stopScanDevice();
+			}
+
+			adapter.notifyDataSetChanged();
+		}
 	}
 }

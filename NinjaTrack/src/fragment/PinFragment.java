@@ -14,6 +14,7 @@ import redbearservice.IRedBearServiceEventListener;
 import redbearservice.RedBearService;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.graphics.Color;
@@ -37,7 +38,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -46,15 +46,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class PinFragment extends Fragment implements IRBLProtocol {
-
+	
+	private TextView tv_devicename, tv_rssi;
+	private LinearLayout pins_list;
+	private ProgressDialog progress;
+	
 	final String TAG = "StandardViewFragmentForPins";
 	final long timeout = 3000;
 	public static final int RST_CODE = 10;
-	Device mDevice;
-	TextView textRssi;
-	TextView textName;
-	ProgressBar mLoading;
-	LinearLayout pins_list;
+	
+	Device device;
 	boolean isFirstReadRssi = true;
 	boolean isFirstReadPin = true;
 	RedBearService mRedBearService;
@@ -69,8 +70,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 	public PinFragment() {}
 
-	public PinFragment(Device mDevice, RedBearService mRedBearService) {
-		this.mDevice = mDevice;
+	public PinFragment(Device device, RedBearService mRedBearService) {
+		this.device = device;
 		pins = new SparseArray<Pin>();
 		changeValues = new HashMap<String, Pin>();
 		list_pins_views = new HashMap<String, View>();
@@ -79,69 +80,61 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.pin_list, null);
+		
+		View rootView = inflater.inflate(R.layout.pin_list, null);
 
-		textRssi = (TextView) view.findViewById(R.id.text_rssi);
-		textName = (TextView) view.findViewById(R.id.text_devicename);
-		pins_list = (LinearLayout) view.findViewById(R.id.pins_list);
+		tv_devicename = (TextView) rootView.findViewById(R.id.tv_devicename);
+		tv_rssi = (TextView) rootView.findViewById(R.id.tv_rssi);		
+		pins_list = (LinearLayout) rootView.findViewById(R.id.pins_list);
 		pins_list.setEnabled(false);
-		mLoading = (ProgressBar) view.findViewById(R.id.pin_loading);
-		if (mDevice != null) {
-			textName.setText(mDevice.getName());
+		
+		progress = new ProgressDialog(getActivity());
+		progress.setMessage("Retrieving pin");
+		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		progress.setIndeterminate(true);
+		progress.show();
+		
+		if (device != null) {
+			tv_devicename.setText(device.getName());
+			device.setRssi(0);
+			tv_rssi.setText("Rssi : " + device.getRssi());
 
-			mDevice.setRssi(0);
-
-			textRssi.setText("Rssi : " + mDevice.getRssi());
-
-			mProtocol = new RBLProtocol(mDevice.getAddress());
+			mProtocol = new RBLProtocol(device.getAddress());
 			mProtocol.setIRBLProtocol(this);
 		}
 
 		timerFlag = false;
 		mTimerTask = new TimerTask() {
-
 			@Override
 			public void run() {
 				if (getActivity() != null) {
 					getActivity().setResult(RST_CODE);
 					getActivity().finish();
 					getActivity().runOnUiThread(new Runnable() {
-
 						@Override
 						public void run() {
-							new AlertDialog.Builder(getActivity())
-									.setTitle("Error")
-									.setMessage(
-											"No response from the BLE Controller sketch.")
-									.setPositiveButton("OK", null).show();
+							new AlertDialog.Builder(getActivity()).setTitle("Error").setMessage("No response from the BLE Controller sketch.").setPositiveButton("OK", null).show();
 						}
 					});
 				}
 			}
 		};
 
-		return view;
-	}
-
-	@Override
-	public void onDestroy() {
-		mHandler.removeMessages(0);
-		super.onDestroy();
+		return rootView;
 	}
 
 	@Override
 	public void onResume() {
 		if (mRedBearService != null) {
-			if (mDevice != null) {
+			if (device != null) {
 				if (mProtocol != null) {
 					mProtocol.setmIRedBearService(mRedBearService);
 				}
 				mRedBearService.setListener(mIRedBearServiceEventListener);
-				textName.post(new Runnable() {
-
+				tv_devicename.post(new Runnable() {
 					@Override
 					public void run() {
-						mRedBearService.readRssi(mDevice.getAddress());
+						mRedBearService.readRssi(device.getAddress());
 					}
 				});
 			}
@@ -151,9 +144,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 //			
 //			@Override
 //			public void run() {
-				if (textRssi != null) {
-					textRssi.postDelayed(new Runnable() {
-
+				if (tv_rssi != null) {
+					tv_rssi.postDelayed(new Runnable() {
 						@Override
 						public void run() {
 							if (mProtocol != null) {
@@ -174,22 +166,24 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		super.onResume();
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		mHandler.removeMessages(0);
+	}
+
 	final IRedBearServiceEventListener mIRedBearServiceEventListener = new IRedBearServiceEventListener() {
-
 		@Override
-		public void onDeviceFound(String deviceAddress, String name, int rssi,
-				int bondState, byte[] scanRecord, ParcelUuid[] uuids) {
-
+		public void onDeviceFound(String deviceAddress, String name, int rssi, int bondState, byte[] scanRecord, ParcelUuid[] uuids) {
 			// to do nothing
 		}
 
 		@Override
-		public void onDeviceRssiUpdate(final String deviceAddress,
-				final int rssi, final int state) {
+		public void onDeviceRssiUpdate(final String deviceAddress, final int rssi, final int state) {
 			getActivity().runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-
 					deviceRssiStateChange(deviceAddress, rssi, state);
 					if (isFirstReadRssi) {
 						mHandler.sendEmptyMessageDelayed(0, 1000);
@@ -202,9 +196,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		}
 
 		@Override
-		public void onDeviceConnectStateChange(final String deviceAddress,
-				final int state) {
-
+		public void onDeviceConnectStateChange(final String deviceAddress, final int state) {
 			if (getActivity() != null) {
 				getActivity().runOnUiThread(new Runnable() {
 
@@ -228,7 +220,6 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 		@Override
 		public void onDeviceCharacteristicFound() {
-			// TODO Auto-generated method stub
 			
 		}
 	};
@@ -239,8 +230,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 			if (msg.what == 0) {
 				if (mRedBearService != null) {
-					if (mDevice != null) {
-						mRedBearService.readRssi(mDevice.getAddress());
+					if (device != null) {
+						mRedBearService.readRssi(device.getAddress());
 					}
 				}
 			} else if (msg.what == 1) {
@@ -249,8 +240,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 						mProtocol.queryProtocolVersion();
 					}
 					if (getActivity() != null) {
-						Toast.makeText(getActivity(), "Retry it!",
-								Toast.LENGTH_SHORT).show();
+						Toast.makeText(getActivity(), "Retry it!", Toast.LENGTH_SHORT).show();
 						mHandler.sendEmptyMessageDelayed(2, timeout);
 					}
 				}
@@ -260,42 +250,37 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 						mProtocol.queryProtocolVersion();
 					}
 					if (getActivity() != null) {
-						Toast.makeText(getActivity(), "Retry it again!",
-								Toast.LENGTH_SHORT).show();
+						Toast.makeText(getActivity(), "Retry it again!", Toast.LENGTH_SHORT).show();
 					}
 					mTimer.schedule(mTimerTask, timeout);
 					timerFlag = true;
 				}
 			}
-
+			
 			return true;
 		}
 	};
 
 	Handler mHandler = new Handler(mHandlerCallback);
 
-	protected void deviceRssiStateChange(String deviceAddress, int rssi,
-			int state) {
+	protected void deviceRssiStateChange(String deviceAddress, int rssi, int state) {
 		if (state == 0) {
-			if (deviceAddress.equals(mDevice.getAddress())) {
-				mDevice.setRssi(rssi);
-				textRssi.setText("Rssi : " + rssi);
+			if (deviceAddress.equals(device.getAddress())) {
+				device.setRssi(rssi);
+				tv_rssi.setText("Rssi : " + rssi);
 			}
 		}
 	}
 
 	protected void deviceConnectStateChange(String deviceAddress, int state) {
 		if (state == BluetoothProfile.STATE_CONNECTED) {
-			Toast.makeText(getActivity(), "Connected", Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(getActivity(), "Connected", Toast.LENGTH_SHORT).show();
 
-			if (textRssi != null) {
-				textRssi.postDelayed(new Runnable() {
-
+			if (tv_rssi != null) {
+				tv_rssi.postDelayed(new Runnable() {
 					@Override
 					public void run() {
 						if (mProtocol != null) {
-
 							// 1. queryProtocolVersion
 							// 2. queryTotalPinCount
 							// 3. queryPinAll
@@ -306,16 +291,14 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 					}
 				}, 300);
 			}
-
 		} else if (state == BluetoothProfile.STATE_DISCONNECTED) {
-
+			
 		}
 	}
 
 	@Override
 	public void protocolDidReceiveCustomData(int[] data, int length) {
-		Log.e(TAG, "protocolDidReceiveCustomData data : " + data
-				+ ", length : " + length);
+		Log.e(TAG, "protocolDidReceiveCustomData data : " + data + ", length : " + length);
 
 		final int count = data.length;
 
@@ -331,19 +314,14 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 			if (getActivity() != null) {
 				getActivity().runOnUiThread(new Runnable() {
 					// removed loading and let the listview working
-
 					@Override
 					public void run() {
-						if (mLoading != null) {
-							mLoading.setVisibility(View.GONE);
-						}
 						if (changeValues != null) {
 							final int count = pins.size();
 							for (int i = 0; i < count; i++) {
 								int key = pins.keyAt(i);
 								Pin pInfo = pins.get(key);
-								Pin changedPin = changeValues.get(key
-										+ "");
+								Pin changedPin = changeValues.get(key + "");
 
 								if (changedPin != null) {
 									pInfo.setMode(changedPin.getMode());
@@ -354,19 +332,17 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 							changeValues = null;
 							isFirstReadPin = false;
 						}
+						progress.dismiss();
 						pins_list.setEnabled(true);
 					}
 				});
 			}
 		}
-
 	}
 
 	@Override
-	public void protocolDidReceiveProtocolVersion(int major, int minor,
-			int bugfix) {
-		Log.e(TAG, "major : " + major + ", minor : " + minor + ", bugfix : "
-				+ bugfix);
+	public void protocolDidReceiveProtocolVersion(int major, int minor, int bugfix) {
+		Log.e(TAG, "major : " + major + ", minor : " + minor + ", bugfix : " + bugfix);
 
 		System.out.println(timerFlag);
 		if (timerFlag == true)
@@ -376,8 +352,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 			int[] data = { 'B', 'L', 'E' };
 			mProtocol.sendCustomData(data, 3);
 
-			if (textRssi != null) {
-				textRssi.postDelayed(new Runnable() {
+			if (tv_rssi != null) {
+				tv_rssi.postDelayed(new Runnable() {
 
 					@Override
 					public void run() {
@@ -399,8 +375,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 	@Override
 	public void protocolDidReceivePinCapability(int pin, int value) {
-		Log.e(TAG, "protocolDidReceivePinCapability pin : " + pin
-				+ ", value : " + value);
+		Log.e(TAG, "protocolDidReceivePinCapability pin : " + pin + ", value : " + value);
 
 		if (value == 0) {
 			Log.e(TAG, " - Nothing");
@@ -451,8 +426,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 	@Override
 	public void protocolDidReceivePinMode(int pin, int mode) {
-		Log.e(TAG, "protocolDidReceivePinCapability pin : " + pin + ", mode : "
-				+ mode);
+		Log.e(TAG, "protocolDidReceivePinCapability pin : " + pin + ", mode : " + mode);
 		if (pins == null) {
 			return;
 		}
@@ -467,8 +441,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	public void protocolDidReceivePinData(int pin, int mode, int value) {
 		byte _mode = (byte) (mode & 0x0F);
 
-		Log.e(TAG, "protocolDidReceivePinData pin : " + pin + ", _mode : "
-				+ _mode + ", value : " + value);
+		Log.e(TAG, "protocolDidReceivePinData pin : " + pin + ", _mode : " + _mode + ", value : " + value);
 
 		if (pins == null) {
 			return;
@@ -503,8 +476,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	}
 
 	protected void refreshList(final Pin pin) {
-		if (textRssi != null) {
-			textRssi.postDelayed(new Runnable() {
+		if (tv_rssi != null) {
+			tv_rssi.postDelayed(new Runnable() {
 				@Override
 				public void run() {
 
@@ -521,9 +494,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 								return;
 							}
 							view = mAdapter.getView(pin.getPin(), view, null);
-							LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-									LinearLayout.LayoutParams.MATCH_PARENT,
-									LinearLayout.LayoutParams.WRAP_CONTENT);
+							LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
 							params.setMargins(10, 5, 10, 5);
 							pins_list.addView(view, params);
 							list_pins_views.put("" + pin.getPin(), view);
@@ -573,17 +544,13 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 			ViewHolder holder = null;
 			if (contentView == null) {
-				contentView = mInflater.inflate(R.layout.pin_list_item,
-						null);
+				contentView = mInflater.inflate(R.layout.pin_list_item, null);
 				holder = new ViewHolder();
 				holder.pin = (TextView) contentView.findViewById(R.id.pin);
 				holder.mode = (Button) contentView.findViewById(R.id.io_mode);
-				holder.servo = (SeekBar) contentView
-						.findViewById(R.id.progressbar);
-				holder.analog = (TextView) contentView
-						.findViewById(R.id.number);
-				holder.digitol = (Switch) contentView
-						.findViewById(R.id.switcher);
+				holder.servo = (SeekBar) contentView.findViewById(R.id.progressbar);
+				holder.analog = (TextView) contentView.findViewById(R.id.number);
+				holder.digitol = (Switch) contentView.findViewById(R.id.switcher);
 				contentView.setTag(holder);
 			} else {
 				holder = (ViewHolder) contentView.getTag();
@@ -632,15 +599,13 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 				} else {
 					holder.digitol.setChecked(false);
 				}
-				holder.digitol
-						.setOnCheckedChangeListener(mDigitolValueChangeListener);
+				holder.digitol.setOnCheckedChangeListener(mDigitolValueChangeListener);
 				break;
 			case IRBLProtocol.ANALOG:
 				holder.analog.setVisibility(View.VISIBLE);
 				holder.analog.setText("" + pinInfo.getValue());
 				break;
-			case IRBLProtocol.SERVO:
-			case IRBLProtocol.PWM:
+			case IRBLProtocol.SERVO: case IRBLProtocol.PWM:
 				if (pinInfo.getMode() == SERVO) {
 					holder.servo.setMax(130);
 				} else {
@@ -657,17 +622,14 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 			@Override
 			public void onCheckedChanged(CompoundButton view, boolean value) {
-
 				if (view.isEnabled()) {
 					Integer key = (Integer) view.getTag();
 					if (key != null) {
 						if (mProtocol != null) {
-							mProtocol.digitalWrite(key.intValue(),
-									value ? (byte) 1 : 0);
+							mProtocol.digitalWrite(key.intValue(), value ? (byte) 1 : 0);
 						}
 					}
 				}
-
 			}
 		};
 
@@ -675,12 +637,10 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 			int value;
 
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
 				Log.e(TAG, "value : " + value);
 				if (fromUser) {
-
 					value = progress;
 				}
 			}
@@ -692,7 +652,6 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-
 				Integer key = (Integer) seekBar.getTag();
 				if (key != null) {
 					if (mProtocol != null) {
@@ -754,20 +713,13 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 				modes_area.setBackgroundColor(Color.WHITE);
 				modes_area.setOrientation(LinearLayout.VERTICAL);
 
-				RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-						RelativeLayout.LayoutParams.MATCH_PARENT,
-						RelativeLayout.LayoutParams.WRAP_CONTENT);
-				params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM,
-						RelativeLayout.TRUE);
+				RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+				params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
 				select_window.addView(modes_area, params);
 
-				getActivity().addContentView(
-						select_window,
-						new LayoutParams(LayoutParams.MATCH_PARENT,
-								LayoutParams.WRAP_CONTENT));
+				getActivity().addContentView(select_window, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 			} else {
-				modes_area = (LinearLayout) select_window
-						.findViewById(modes_area_id);
+				modes_area = (LinearLayout) select_window.findViewById(modes_area_id);
 			}
 
 			select_window.setVisibility(View.INVISIBLE);
@@ -779,21 +731,15 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 					final int btn_mode = b;
 					final int btn_pin = pinInfo.getPin();
 					Button btn = createModeButton(text);
-					LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-							LinearLayout.LayoutParams.MATCH_PARENT,
-							LinearLayout.LayoutParams.WRAP_CONTENT);
+					LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 					params.setMargins(5, 5, 5, 5);
 					btn.setOnClickListener(new OnClickListener() {
-
 						@Override
-						public void onClick(View arg0) {
-
+						public void onClick(View view) {
 							if (mProtocol != null) {
 								mProtocol.setPinMode(btn_pin, btn_mode);
 							}
-
 							select_window.setVisibility(View.INVISIBLE);
-
 						}
 					});
 					modes_area.addView(btn, params);
@@ -804,21 +750,16 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 			animation.setDuration(350);
 			animation.setInterpolator(new DecelerateInterpolator());
 			animation.setAnimationListener(new AnimationListener() {
-
 				@Override
 				public void onAnimationStart(Animation arg0) {
 					select_window.setVisibility(View.VISIBLE);
 				}
 
 				@Override
-				public void onAnimationRepeat(Animation arg0) {
-
-				}
+				public void onAnimationRepeat(Animation arg0) {}
 
 				@Override
-				public void onAnimationEnd(Animation arg0) {
-
-				}
+				public void onAnimationEnd(Animation arg0) {}
 			});
 			select_window.startAnimation(animation);
 		}
@@ -827,8 +768,6 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	protected Button createModeButton(String text) {
 
 		Button btn = new Button(getActivity());
-
-//		btn.setBackgroundResource(R.drawable.button_selector);
 
 		btn.setPadding(20, 5, 20, 5);
 

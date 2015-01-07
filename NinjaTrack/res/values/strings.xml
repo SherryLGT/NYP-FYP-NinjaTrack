@@ -9,11 +9,6 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="image">Image</string>
     
-    <!-- Device -->
-    <string name="lastConnectLab">Last connected device:</string>
-    <string name="connLastDevice">Connect Last Device</string>
-    <string name="scanAll">Scan All</string>
-    
     <!-- Drawer -->
     <string-array name="drawer_titles">
         <item>Music</item>

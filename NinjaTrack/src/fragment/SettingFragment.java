@@ -44,8 +44,8 @@ public class SettingFragment extends Fragment {
         	tv_ninjatrack.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					PinFragment fragment = new PinFragment(device, DeviceListActivity.redBearService);
-					getActivity().getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+					PinFragment pinFragment = new PinFragment(device, DeviceListActivity.redBearService);
+					getActivity().getFragmentManager().beginTransaction().add(R.id.content, pinFragment).commit();
 				}
         	});
         }

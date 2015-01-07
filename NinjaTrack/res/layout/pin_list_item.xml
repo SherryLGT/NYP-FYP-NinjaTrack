@@ -13,8 +13,7 @@
         android:maxWidth="100dp"
         android:minWidth="100dp"
         android:gravity="center"
-        android:text="Pin\n1"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textSize="16sp" />
 
     <Button
@@ -22,13 +21,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_margin="10dp"
         android:maxWidth="100dp"
         android:minWidth="100dp"
-        android:text="OutPut"
         android:textSize="17sp" />
 
     <Switch
@@ -54,7 +49,6 @@
         android:layout_centerVertical="true"
         android:layout_gravity="left|center_vertical" 
         android:gravity="center"
-        android:text="0"
         android:textColor="@android:color/holo_blue_bright"
         android:textSize="16sp"
         android:maxWidth="100dp"

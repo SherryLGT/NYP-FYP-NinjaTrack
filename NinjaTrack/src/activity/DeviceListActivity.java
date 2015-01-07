@@ -10,6 +10,7 @@ import nyp.fypj.ninjatrack.R;
 import redbearservice.IRedBearServiceEventListener;
 import redbearservice.RedBearService;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -38,6 +39,7 @@ public class DeviceListActivity extends Activity {
 
     private final long SCAN_PERIOD = 3000; // 3 seconds
 	
+    private ProgressDialog progress;
 	private SwipeRefreshLayout swipeLayout;
 	private ListView listView;
 	private SimpleAdapter adapter;
@@ -57,6 +59,11 @@ public class DeviceListActivity extends Activity {
 		bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
 		
 		setTitle("Select a Device");
+		progress = new ProgressDialog(this);
+		progress.setMessage("Retrieving device");
+		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		progress.setIndeterminate(true);
+		progress.show();
 		
 		swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
 		listView = (ListView) findViewById(R.id.lv_devices);
@@ -95,11 +102,21 @@ public class DeviceListActivity extends Activity {
 			}
 		});
 	}
-	
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		if(device != null) {
+			redBearService.disconnectDevice(device.getAddress());
+		}
+	}
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		
+		device = null;
 		unbindService(serviceConnection);
 	}
 
@@ -113,6 +130,11 @@ public class DeviceListActivity extends Activity {
 				if(deviceList != null) {
 					deviceList.clear();
 				}
+				if(listItems != null) {
+					if(listItems.size() != 0) {
+						listItems.clear();
+					}
+				}
 				redBearService.setListener(redBearServiceEventListener);
 				redBearService.startScanDevice();
 				
@@ -121,6 +143,7 @@ public class DeviceListActivity extends Activity {
 		        	public void run() {
 		        		if(redBearService != null) {
 		        			redBearService.stopScanDevice();
+		        			progress.dismiss();
 		        			for (Device device : deviceList) {
 		        				map = new HashMap<String, String>();
 		        				map.put(DEVICE_ADDRESS, device.getAddress());
@@ -195,6 +218,7 @@ public class DeviceListActivity extends Activity {
 			super.onPreExecute();
 			
 			deviceList.clear();
+			listItems.clear();
 			if (redBearService != null) {
 				redBearService.stopScanDevice();
 				redBearService.startScanDevice();
@@ -216,7 +240,18 @@ public class DeviceListActivity extends Activity {
 			if (redBearService != null) {
 				redBearService.stopScanDevice();
 			}
-
+			
+			for (Device device : deviceList) {
+				map = new HashMap<String, String>();
+				map.put(DEVICE_ADDRESS, device.getAddress());
+				map.put(DEVICE_NAME, device.getName());
+				listItems.add(map);
+			}
+			
+			adapter = new SimpleAdapter(getApplicationContext(), listItems,
+					R.layout.device_list_item, new String[] { "name", "address" },
+					new int[] { R.id.tv_device_name, R.id.tv_device_address });
+			listView.setAdapter(adapter); 
 			adapter.notifyDataSetChanged();
 		}
 	}

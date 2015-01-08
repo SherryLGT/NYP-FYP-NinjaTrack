@@ -109,6 +109,10 @@ public class DeviceListActivity extends Activity {
 		
 		if(device != null) {
 			redBearService.disconnectDevice(device.getAddress());
+			device = null;
+			finish();
+			Intent intent = new Intent(DeviceListActivity.this, DeviceListActivity.class);
+			startActivity(intent);
 		}
 	}
 

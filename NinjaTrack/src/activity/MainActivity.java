@@ -132,6 +132,19 @@ public class MainActivity extends SherlockFragmentActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void onBackPressed() {
+		if(SettingFragment.pinFragment != null) {
+			getFragmentManager().beginTransaction().remove(SettingFragment.pinFragment).commit();
+			SettingFragment.pinFragment = null;
+		}
+		else {
+			super.onBackPressed();
+		}
+	}
+
+
+
 	// The click listener for ListView in the navigation drawer
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
@@ -166,6 +179,11 @@ public class MainActivity extends SherlockFragmentActivity {
 		drawerItems.get(1).setIcon(R.drawable.icon_profile1);
 		drawerItems.get(2).setIcon(R.drawable.icon_setting1);
 		drawerItems.get(3).setIcon(R.drawable.icon_website1);
+
+		if(SettingFragment.pinFragment != null) {
+			getFragmentManager().beginTransaction().remove(SettingFragment.pinFragment).commit();
+			SettingFragment.pinFragment = null;
+		}
 		
 		switch (position) {
 			case 0: // Music

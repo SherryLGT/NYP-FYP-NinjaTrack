@@ -3,6 +3,8 @@ package fragment;
 import model.Device;
 import nyp.fypj.ninjatrack.R;
 import activity.DeviceListActivity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -21,6 +23,7 @@ public class SettingFragment extends Fragment {
 	private BootstrapButton btn_login, btn_reconnect;
 	
 	private Device device;
+	public static PinFragment pinFragment;
 	
 	public SettingFragment(){}
 	
@@ -41,13 +44,22 @@ public class SettingFragment extends Fragment {
         	tv_ninjatrack.setText("Connected");
         	btn_reconnect.setVisibility(View.GONE);
         	
-        	tv_ninjatrack.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					PinFragment pinFragment = new PinFragment(device, DeviceListActivity.redBearService);
-					getActivity().getFragmentManager().beginTransaction().add(R.id.content, pinFragment).commit();
-				}
-        	});
+        	if(device.getName().equals("BlendMicro")) {
+            	tv_ninjatrack.setOnClickListener(new OnClickListener() {
+    				@Override
+    				public void onClick(View view) {
+    					pinFragment = new PinFragment(device, DeviceListActivity.redBearService);
+    					getActivity().getFragmentManager().beginTransaction().add(R.id.content, pinFragment).commit();
+    				}
+            	});
+        	}
+        	else {
+        		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        		builder.setMessage("Wrong device connected. Please connect to correct device.").setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        			@Override
+					public void onClick(DialogInterface dialog, int which) {}
+				}).create();
+        	}
         }
         else {
         	tv_ninjatrack.setText("Not connected");

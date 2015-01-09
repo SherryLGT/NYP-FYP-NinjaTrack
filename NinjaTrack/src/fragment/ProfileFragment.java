@@ -163,7 +163,7 @@ public class ProfileFragment extends Fragment {
 		
 		iv_image.setOnClickListener(new OnClickListener() {
 			@Override
-			public void onClick(View arg0) {
+			public void onClick(View view) {
 				Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 				startActivityForResult(intent, RESULT_LOAD_IMAGE);
 			}
@@ -225,7 +225,7 @@ public class ProfileFragment extends Fragment {
 		
 		iv_image.setOnClickListener(new OnClickListener() {
 			@Override
-			public void onClick(View arg0) {
+			public void onClick(View view) {
 				final Dialog dialog = new Dialog(getActivity());
 				dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 				View contentView = getActivity().getLayoutInflater().inflate(R.layout.image_dialog, null);				

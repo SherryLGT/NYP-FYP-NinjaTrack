@@ -16,6 +16,7 @@
 
 package activity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
@@ -30,6 +31,7 @@ import model.Device;
 import model.NavDrawerItem;
 import model.Pin;
 import nyp.fypj.ninjatrack.R;
+import adapter.InstrumentHandler;
 import adapter.NavDrawerListAdapter;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -145,7 +147,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			selectItem(0);
 		}
 	}
-
+	
 	@Override
 	protected void onResume() {
 		if(redBearService != null) {
@@ -164,13 +166,13 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		super.onResume();
 	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
+	
 	@Override
 	public boolean onOptionsItemSelected(com.actionbarsherlock.view.MenuItem item) {
 
@@ -188,7 +190,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 
 		return super.onOptionsItemSelected(item);
 	}
-
+	
 	@Override
 	public void onBackPressed() {
 		if(SettingFragment.pinFragment != null) {
@@ -207,7 +209,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			selectItem(position);
 		}
 	}
-
+	
 	@Override
 	public void setTitle(CharSequence cst) {
 		title = cst;
@@ -220,14 +222,14 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		// Sync the toggle state after onRestoreInstanceState has occurred.
 		drawerToggle.syncState();
 	}
-
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggles
 		drawerToggle.onConfigurationChanged(newConfig);
 	}
-
+	
 	private void selectItem(int position) {
 
 		drawerItems.get(0).setIcon(R.drawable.icon_music1);
@@ -422,8 +424,9 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			return;
 		}
 		
+		Pin pinInfo;
 		if (isFirstReadPin) {
-			Pin pinInfo = new Pin();
+			pinInfo = new Pin();
 			pinInfo.setPin(pin);
 			pinInfo.setMode(mode);
 			if ((_mode == INPUT) || (_mode == OUTPUT))
@@ -436,7 +439,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				pinInfo.setValue(value);
 			changeValues.put(pin + "", pinInfo);
 		} else {
-			Pin pinInfo = pins.get(pin);
+			pinInfo = pins.get(pin);
 			pinInfo.setMode(mode);
 			if ((_mode == INPUT) || (_mode == OUTPUT))
 				pinInfo.setValue(value);
@@ -447,6 +450,64 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			else if (_mode == SERVO)
 				pinInfo.setValue(value);
 		}
+		
+		// Switch Pins
+		if(pinInfo.getPin() == 22) {
+			if(pinInfo.getValue() == 0){
+				InstrumentHandler.switch1_flag = 0;
+			}
+			else {
+				InstrumentHandler.switch1_flag = 1;
+			}
+		}		
+		if(pinInfo.getPin() == 23) {
+			if(pinInfo.getValue() == 0){
+				InstrumentHandler.switch2_flag = 0;
+			}
+			else {
+				InstrumentHandler.switch2_flag = 1;
+			}
+		}
+		
+		// Determine instrument
+		if(InstrumentHandler.switch1_flag != -1 && InstrumentHandler.switch2_flag != -1) {
+			InstrumentHandler.checkFlags();
+		}
+		
+		try {
+			if(!isFirstReadPin) {
+				switch(pinInfo.getPin()) { // Check for button
+					case 2:
+						InstrumentHandler.playSound(MainActivity.this, 1);
+						break;
+					case 3:
+						InstrumentHandler.playSound(MainActivity.this, 2);
+						break;
+					case 4:
+						InstrumentHandler.playSound(MainActivity.this, 3);
+						break;
+					case 5:
+						InstrumentHandler.playSound(MainActivity.this, 4);
+						break;
+					case 6:
+						InstrumentHandler.playSound(MainActivity.this, 5);
+						break;
+					case 7:
+						InstrumentHandler.playSound(MainActivity.this, 6);
+						break;
+					case 8:
+						InstrumentHandler.playSound(MainActivity.this, 7);
+						break;
+				}
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// Button Pin 2 - 12 ??
+		// Switch Pin 22 - 23
+		// Press|Switch on/off - 0/1
 	}
 	
 	Handler.Callback handlerCallback = new Handler.Callback() {

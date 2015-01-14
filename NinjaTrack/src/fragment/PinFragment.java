@@ -360,7 +360,6 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 					}
 				}, 300);
 			}
-
 		}
 	}
 

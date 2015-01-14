@@ -343,8 +343,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	@Override
 	public void protocolDidReceiveProtocolVersion(int major, int minor, int bugfix) {
 		Log.e(TAG, "major : " + major + ", minor : " + minor + ", bugfix : " + bugfix);
-
-		System.out.println(timerFlag);
+		
 		if (timerFlag == true)
 			mTimerTask.cancel();
 
@@ -442,7 +441,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		byte _mode = (byte) (mode & 0x0F);
 
 		Log.e(TAG, "protocolDidReceivePinData pin : " + pin + ", _mode : " + _mode + ", value : " + value);
-
+		
 		if (pins == null) {
 			return;
 		}

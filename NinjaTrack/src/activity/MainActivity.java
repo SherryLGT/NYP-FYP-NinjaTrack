@@ -17,19 +17,34 @@
 package activity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import redbearprotocol.IRBLProtocol;
+import redbearprotocol.RBLProtocol;
+import redbearservice.IRedBearServiceEventListener;
+import redbearservice.RedBearService;
+
+import model.Device;
 import model.NavDrawerItem;
+import model.Pin;
 import nyp.fypj.ninjatrack.R;
 import adapter.NavDrawerListAdapter;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.ParcelUuid;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
@@ -39,26 +54,50 @@ import fragment.SettingFragment;
 import fragment.WebsiteFragment;
 
 @SuppressWarnings("deprecation")
-public class MainActivity extends SherlockFragmentActivity {
+public class MainActivity extends SherlockFragmentActivity implements IRBLProtocol {
 	
 	private DrawerLayout drawerLayout;
 	private ListView drawerList;
 	private ActionBarDrawerToggle drawerToggle;
 
 	private CharSequence title;
-	private CharSequence drawerTitle;
-	
+	private CharSequence drawerTitle;	
 	private String[] navTitles;
-	private TypedArray navIcons;
-	
+	private TypedArray navIcons;	
 	private ArrayList<NavDrawerItem> drawerItems;
 	private NavDrawerListAdapter adapter;
-		
+	
+	private Device device;
+	private RedBearService redBearService;
+	private RBLProtocol protocol;
+	private SparseArray<Pin> pins;
+	private HashMap<String, Pin> changeValues;
+	private boolean isFirstReadPin = true;
+	private boolean isFirstReadRssi = true;
+	
+	private Timer timer;
+	private TimerTask timerTask;
+	private boolean timerFlag;
+	private int timeout = 3000;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-				
+		
+		device = DeviceListActivity.device;
+		redBearService = DeviceListActivity.redBearService;
+		pins = new SparseArray<Pin>();
+		changeValues = new HashMap<String, Pin>();
+		timer = new Timer();
+		
+		if(device != null) {
+			device.setRssi(0);
+			protocol = new RBLProtocol(device.getAddress());
+			protocol.setIRBLProtocol(this);
+		}
+		timerFlag = false;
+		
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerList = (ListView) findViewById(R.id.left_drawer);
 		navTitles = getResources().getStringArray(R.array.drawer_titles);
@@ -105,7 +144,25 @@ public class MainActivity extends SherlockFragmentActivity {
 		if (savedInstanceState == null) {
 			selectItem(0);
 		}
+	}
 
+	@Override
+	protected void onResume() {
+		if(redBearService != null) {
+			if(device != null) {
+				if(protocol != null) {
+					protocol.setmIRedBearService(redBearService);
+				}
+				redBearService.setListener(redBearServiceEventListener);
+				redBearService.readRssi(device.getAddress());
+			}
+		}
+		if(protocol != null){
+			protocol.queryProtocolVersion();
+		}
+		handler.sendEmptyMessageDelayed(1, timeout);
+		
+		super.onResume();
 	}
 
 	@Override
@@ -142,9 +199,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			super.onBackPressed();
 		}
 	}
-
-
-
+	
 	// The click listener for ListView in the navigation drawer
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
@@ -212,4 +267,224 @@ public class MainActivity extends SherlockFragmentActivity {
 		setTitle(navTitles[position]);
 		drawerLayout.closeDrawer(drawerList);
 	}
+	
+	private final IRedBearServiceEventListener redBearServiceEventListener = new IRedBearServiceEventListener() {
+		@Override
+		public void onDeviceFound(String address, String name, int rssi, int bondState, byte[] scanRecord, ParcelUuid[] uuids) {}
+
+		@Override
+		public void onDeviceRssiUpdate(final String deviceAddress, final int rssi, final int state) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if(state == 0) {
+						if(deviceAddress.equals(device.getAddress())) {
+							device.setRssi(rssi);
+						}
+					}
+					if (isFirstReadRssi) {
+						handler.sendEmptyMessageDelayed(0, 1000);
+						isFirstReadRssi = false;
+					} else {
+						handler.sendEmptyMessageDelayed(0, 300);
+					}
+				}
+			});
+		}
+
+		@Override
+		public void onDeviceConnectStateChange(final String deviceAddress, final int state) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if(protocol != null) {
+						protocol.queryProtocolVersion();
+					}
+				}
+			});
+		}
+
+		@Override
+		public void onDeviceReadValue(int[] value) {
+			if(protocol != null) {
+				protocol.parseData(value);
+			}
+		}
+
+		@Override
+		public void onDeviceCharacteristicFound() {}
+	};
+	
+	@Override
+	public void protocolDidReceiveCustomData(int[] data, int length) {
+		final int count = data.length;
+		char[] chars = new char[count];
+		
+		for(int i = 0; i <count; i++) {
+			chars[i] = (char) data[i];
+		}
+		
+		String temp = new String(chars);
+		if(temp.contains("ABC")) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (changeValues != null) {
+						final int count = pins.size();
+						for (int i = 0; i < count; i++) {
+							int key = pins.keyAt(i);
+							Pin pInfo = pins.get(key);
+							Pin changedPin = changeValues.get(key + "");
+
+							if (changedPin != null) {
+								pInfo.setMode(changedPin.getMode());
+								pInfo.setValue(changedPin.getValue());
+							}
+						}
+						changeValues = null;
+						isFirstReadPin = false;
+					}
+				}
+			});
+		}
+	}
+
+	@Override
+	public void protocolDidReceiveProtocolVersion(int major, int minor, int bugfix) {
+		if (timerFlag == true)
+			timerTask.cancel();
+
+		if (protocol != null) {
+			int[] data = { 'B', 'L', 'E' };
+			protocol.sendCustomData(data, 3);
+			protocol.queryTotalPinCount();
+		}
+	}
+
+	@Override
+	public void protocolDidReceiveTotalPinCount(int count) {
+		if(protocol != null) {
+			protocol.queryPinAll();
+		}
+	}
+
+	@Override
+	public void protocolDidReceivePinCapability(int pin, int value) {
+		if(value == 0) {}
+		else {
+			if(pins == null) {
+				return;
+			}
+			Pin pinInfo = new Pin();
+			pinInfo.setPin(pin);
+			
+			ArrayList<Integer> modes = new ArrayList<Integer>();
+			modes.add(INPUT);
+			
+			if((value & PIN_CAPABILITY_DIGITAL) == PIN_CAPABILITY_DIGITAL) {
+				modes.add(OUTPUT);
+			}
+			if((value & PIN_CAPABILITY_ANALOG) == PIN_CAPABILITY_ANALOG) {
+				modes.add(ANALOG);
+			}
+			if((value & PIN_CAPABILITY_PWM) == PIN_CAPABILITY_PWM) {
+				modes.add(PWM);
+			}
+			if((value & PIN_CAPABILITY_SERVO) == PIN_CAPABILITY_SERVO) {
+				modes.add(SERVO);
+			}
+			
+			final int count = modes.size();
+			pinInfo.setModes(new int[count]);
+			for(int i = 0; i < count; i++) {
+				pinInfo.getModes()[i] = modes.get(i);
+			}
+			pins.put(pin, pinInfo);
+			modes.clear();
+		}
+	}
+
+	@Override
+	public void protocolDidReceivePinMode(int pin, int mode) {
+		if(pins == null) {
+			return;
+		}
+		
+		Pin pinInfo = pins.get(pin);
+		pinInfo.setMode(mode);
+	}
+
+	@Override
+	public void protocolDidReceivePinData(int pin, int mode, int value) {
+		byte _mode = (byte) (mode & 0x0F);
+		
+		if(pins == null) {
+			return;
+		}
+		
+		if (isFirstReadPin) {
+			Pin pinInfo = new Pin();
+			pinInfo.setPin(pin);
+			pinInfo.setMode(mode);
+			if ((_mode == INPUT) || (_mode == OUTPUT))
+				pinInfo.setValue(value);
+			else if (_mode == ANALOG)
+				pinInfo.setValue(((mode >> 4) << 8) + value);
+			else if (_mode == PWM)
+				pinInfo.setValue(value);
+			else if (_mode == SERVO)
+				pinInfo.setValue(value);
+			changeValues.put(pin + "", pinInfo);
+		} else {
+			Pin pinInfo = pins.get(pin);
+			pinInfo.setMode(mode);
+			if ((_mode == INPUT) || (_mode == OUTPUT))
+				pinInfo.setValue(value);
+			else if (_mode == ANALOG)
+				pinInfo.setValue(((mode >> 4) << 8) + value);
+			else if (_mode == PWM)
+				pinInfo.setValue(value);
+			else if (_mode == SERVO)
+				pinInfo.setValue(value);
+		}
+	}
+	
+	Handler.Callback handlerCallback = new Handler.Callback() {
+		@Override
+		public boolean handleMessage(Message msg) {
+
+			if (msg.what == 0) {
+				if (redBearService != null) {
+					if (device != null) {
+						redBearService.readRssi(device.getAddress());
+					}
+				}
+			} else if (msg.what == 1) {
+				if (pins.size() == 0) {
+					if (protocol != null) {
+						protocol.queryProtocolVersion();
+					}
+					if (MainActivity.this != null) {
+						Toast.makeText(MainActivity.this, "Retry it!", Toast.LENGTH_SHORT).show();
+						handler.sendEmptyMessageDelayed(2, timeout);
+					}
+				}
+			} else if (msg.what == 2) {
+				if (pins.size() == 0) {
+					if (protocol != null) {
+						protocol.queryProtocolVersion();
+					}
+					if (MainActivity.this != null) {
+						Toast.makeText(MainActivity.this, "Retry it again!", Toast.LENGTH_SHORT).show();
+					}
+					timer.schedule(timerTask, timeout);
+					timerFlag = true;
+				}
+			}
+			
+			return true;
+		}
+	};
+	
+	Handler handler = new Handler(handlerCallback);
 }

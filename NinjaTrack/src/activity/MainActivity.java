@@ -18,7 +18,9 @@ package activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +35,10 @@ import model.Pin;
 import nyp.fypj.ninjatrack.R;
 import adapter.InstrumentHandler;
 import adapter.NavDrawerListAdapter;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -72,6 +78,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private Device device;
 	private RedBearService redBearService;
 	private RBLProtocol protocol;
+	private List<Integer> buttonPins;
 	private SparseArray<Pin> pins;
 	private HashMap<String, Pin> changeValues;
 	private boolean isFirstReadPin = true;
@@ -81,6 +88,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private TimerTask timerTask;
 	private boolean timerFlag;
 	private int timeout = 3000;
+	private ProgressDialog progress;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,9 +97,31 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		device = DeviceListActivity.device;
 		redBearService = DeviceListActivity.redBearService;
+		buttonPins = Arrays.asList(2, 3, 5, 8, 9, 10, 11, 12);
 		pins = new SparseArray<Pin>();
 		changeValues = new HashMap<String, Pin>();
 		timer = new Timer();
+		timerTask = new TimerTask() {
+			@Override
+			public void run() {
+				if (MainActivity.this != null) {
+					MainActivity.this.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							new AlertDialog.Builder(MainActivity.this).setTitle("Error").setMessage("No response from the BLE Controller sketch.").setPositiveButton("OK", new OnClickListener(){
+
+								@Override
+								public void onClick(DialogInterface arg0,
+										int arg1) {
+									MainActivity.this.finish();
+								}
+								
+							}).show();
+						}
+					});
+				}
+			}
+		};
 		
 		if(device != null) {
 			device.setRssi(0);
@@ -99,6 +129,11 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			protocol.setIRBLProtocol(this);
 		}
 		timerFlag = false;
+		progress = new ProgressDialog(MainActivity.this);
+		progress.setMessage("Retrieving pin");
+		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		progress.setIndeterminate(true);
+		progress.show();
 		
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerList = (ListView) findViewById(R.id.left_drawer);
@@ -353,9 +388,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 
 	@Override
 	public void protocolDidReceiveProtocolVersion(int major, int minor, int bugfix) {
-		if (timerFlag == true)
-			timerTask.cancel();
-
 		if (protocol != null) {
 			int[] data = { 'B', 'L', 'E' };
 			protocol.sendCustomData(data, 3);
@@ -381,19 +413,27 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			pinInfo.setPin(pin);
 			
 			ArrayList<Integer> modes = new ArrayList<Integer>();
-			modes.add(INPUT);
+//			modes.add(INPUT);
 			
-			if((value & PIN_CAPABILITY_DIGITAL) == PIN_CAPABILITY_DIGITAL) {
-				modes.add(OUTPUT);
-			}
-			if((value & PIN_CAPABILITY_ANALOG) == PIN_CAPABILITY_ANALOG) {
-				modes.add(ANALOG);
-			}
-			if((value & PIN_CAPABILITY_PWM) == PIN_CAPABILITY_PWM) {
-				modes.add(PWM);
-			}
-			if((value & PIN_CAPABILITY_SERVO) == PIN_CAPABILITY_SERVO) {
-				modes.add(SERVO);
+//			if((value & PIN_CAPABILITY_DIGITAL) == PIN_CAPABILITY_DIGITAL) {
+//				modes.add(OUTPUT);
+//			}
+//			if((value & PIN_CAPABILITY_ANALOG) == PIN_CAPABILITY_ANALOG) {
+//				modes.add(ANALOG);
+//			}
+//			if((value & PIN_CAPABILITY_PWM) == PIN_CAPABILITY_PWM) {
+//				modes.add(PWM);
+//			}
+//			if((value & PIN_CAPABILITY_SERVO) == PIN_CAPABILITY_SERVO) {
+//				modes.add(SERVO);
+//			}
+			switch(pin){
+				case 2: case 3: case 5: case 8: case 9: case 10: case 11: case 12:
+					modes.add(INPUT);
+					break;
+				case 21:
+					modes.add(ANALOG);
+					break;
 			}
 			
 			final int count = modes.size();
@@ -418,7 +458,17 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 
 	@Override
 	public void protocolDidReceivePinData(int pin, int mode, int value) {
-		byte _mode = (byte) (mode & 0x0F);
+//		byte _mode = (byte) (mode & 0x0F);
+		
+		byte _mode = 0;
+		switch(pin){
+		case 2: case 3: case 5: case 8: case 9: case 10: case 11: case 12:
+			_mode = INPUT;
+			break;
+		case 21:
+			_mode = ANALOG;
+			break;
+		}
 		
 		if(pins == null) {
 			return;
@@ -459,8 +509,11 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			else {
 				InstrumentHandler.switch1_flag = 1;
 			}
-		}		
+		}
 		if(pinInfo.getPin() == 23) {
+			progress.dismiss();
+			if (timerFlag == true)
+				timerTask.cancel(); 
 			if(pinInfo.getValue() == 0){
 				InstrumentHandler.switch2_flag = 0;
 			}
@@ -476,28 +529,38 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		try {
 			if(!isFirstReadPin) {
-				switch(pinInfo.getPin()) { // Check for button
-					case 2:
-						InstrumentHandler.playSound(MainActivity.this, 1);
-						break;
-					case 3:
-						InstrumentHandler.playSound(MainActivity.this, 2);
-						break;
-					case 4:
-						InstrumentHandler.playSound(MainActivity.this, 3);
-						break;
-					case 5:
-						InstrumentHandler.playSound(MainActivity.this, 4);
-						break;
-					case 6:
-						InstrumentHandler.playSound(MainActivity.this, 5);
-						break;
-					case 7:
-						InstrumentHandler.playSound(MainActivity.this, 6);
-						break;
-					case 8:
-						InstrumentHandler.playSound(MainActivity.this, 7);
-						break;
+				if(buttonPins.contains(pinInfo.getPin())) { // Check for button
+					if(pinInfo.getValue() == 1) { // Button pressed
+						switch(pinInfo.getPin()) { // Check for which button
+							case 2:
+								InstrumentHandler.PlaySound(MainActivity.this, 1);
+								break;
+							case 3:
+								InstrumentHandler.PlaySound(MainActivity.this, 2);
+								break;
+							case 5:
+								InstrumentHandler.PlaySound(MainActivity.this, 3);
+								break;
+							case 8:
+								InstrumentHandler.PlaySound(MainActivity.this, 4);
+								break;
+							case 9:
+								InstrumentHandler.PlaySound(MainActivity.this, 5);
+								break;
+							case 10:
+								InstrumentHandler.PlaySound(MainActivity.this, 6);
+								break;
+							case 11:
+								InstrumentHandler.PlaySound(MainActivity.this, 7);
+								break;
+							case 12:
+								InstrumentHandler.PlaySound(MainActivity.this, 8);
+								break;
+						}
+					}
+				}
+				if(pinInfo.getPin() == 21) {
+					InstrumentHandler.flex_flag = pinInfo.getValue();
 				}
 			}
 		}
@@ -505,9 +568,12 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			e.printStackTrace();
 		}
 		
-		// Button Pin 2 - 12 ??
-		// Switch Pin 22 - 23
-		// Press|Switch on/off - 0/1
+		// Button Pin 2, 3, 5, 8, 9, 10, 11, 12
+		// Flex Pin 21
+		// Switch Pin 22, 23
+		// Press|Switch on/off - 1/0
+		
+		System.out.println("PIN: " + pinInfo.getPin() + " |VALUE: " + pinInfo.getValue() + " |MODE: " + pinInfo.getMode());
 	}
 	
 	Handler.Callback handlerCallback = new Handler.Callback() {
@@ -520,7 +586,8 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						redBearService.readRssi(device.getAddress());
 					}
 				}
-			} else if (msg.what == 1) {
+			}
+			else if (msg.what == 1) {
 				if (pins.size() == 0) {
 					if (protocol != null) {
 						protocol.queryProtocolVersion();
@@ -530,7 +597,8 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						handler.sendEmptyMessageDelayed(2, timeout);
 					}
 				}
-			} else if (msg.what == 2) {
+			}
+			else if (msg.what == 2) {
 				if (pins.size() == 0) {
 					if (protocol != null) {
 						protocol.queryProtocolVersion();

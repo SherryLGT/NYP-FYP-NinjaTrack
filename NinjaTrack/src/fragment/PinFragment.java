@@ -601,6 +601,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 				break;
 			case IRBLProtocol.ANALOG:
 				holder.analog.setVisibility(View.VISIBLE);
+				System.out.println(pinInfo.getValue());
 				holder.analog.setText("" + pinInfo.getValue());
 				break;
 			case IRBLProtocol.SERVO: case IRBLProtocol.PWM:

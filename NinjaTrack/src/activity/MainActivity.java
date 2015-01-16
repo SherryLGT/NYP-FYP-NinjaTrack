@@ -39,12 +39,14 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelUuid;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -75,6 +77,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private ArrayList<NavDrawerItem> drawerItems;
 	private NavDrawerListAdapter adapter;
 	
+	private SharedPreferences sp;
 	private Device device;
 	private RedBearService redBearService;
 	private RBLProtocol protocol;
@@ -95,6 +98,8 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		sp = PreferenceManager.getDefaultSharedPreferences(this);
+		
 		device = DeviceListActivity.device;
 		redBearService = DeviceListActivity.redBearService;
 		buttonPins = Arrays.asList(2, 3, 5, 8, 9, 10, 11, 12);
@@ -108,11 +113,9 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 					MainActivity.this.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							new AlertDialog.Builder(MainActivity.this).setTitle("Error").setMessage("No response from the BLE Controller sketch.").setPositiveButton("OK", new OnClickListener(){
-
+							new AlertDialog.Builder(MainActivity.this).setTitle("No response").setMessage("Please reconnect to device.").setPositiveButton("OK", new OnClickListener(){
 								@Override
-								public void onClick(DialogInterface arg0,
-										int arg1) {
+								public void onClick(DialogInterface arg0, int arg1) {
 									MainActivity.this.finish();
 								}
 								
@@ -130,7 +133,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		timerFlag = false;
 		progress = new ProgressDialog(MainActivity.this);
-		progress.setMessage("Retrieving pin");
+		progress.setMessage("Retrieving pin information");
 		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		progress.setIndeterminate(true);
 		progress.show();
@@ -413,27 +416,19 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			pinInfo.setPin(pin);
 			
 			ArrayList<Integer> modes = new ArrayList<Integer>();
-//			modes.add(INPUT);
+			modes.add(INPUT);
 			
-//			if((value & PIN_CAPABILITY_DIGITAL) == PIN_CAPABILITY_DIGITAL) {
-//				modes.add(OUTPUT);
-//			}
-//			if((value & PIN_CAPABILITY_ANALOG) == PIN_CAPABILITY_ANALOG) {
-//				modes.add(ANALOG);
-//			}
-//			if((value & PIN_CAPABILITY_PWM) == PIN_CAPABILITY_PWM) {
-//				modes.add(PWM);
-//			}
-//			if((value & PIN_CAPABILITY_SERVO) == PIN_CAPABILITY_SERVO) {
-//				modes.add(SERVO);
-//			}
-			switch(pin){
-				case 2: case 3: case 5: case 8: case 9: case 10: case 11: case 12:
-					modes.add(INPUT);
-					break;
-				case 21:
-					modes.add(ANALOG);
-					break;
+			if((value & PIN_CAPABILITY_DIGITAL) == PIN_CAPABILITY_DIGITAL) {
+				modes.add(OUTPUT);
+			}
+			if((value & PIN_CAPABILITY_ANALOG) == PIN_CAPABILITY_ANALOG) {
+				modes.add(ANALOG);
+			}
+			if((value & PIN_CAPABILITY_PWM) == PIN_CAPABILITY_PWM) {
+				modes.add(PWM);
+			}
+			if((value & PIN_CAPABILITY_SERVO) == PIN_CAPABILITY_SERVO) {
+				modes.add(SERVO);
 			}
 			
 			final int count = modes.size();
@@ -458,17 +453,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 
 	@Override
 	public void protocolDidReceivePinData(int pin, int mode, int value) {
-//		byte _mode = (byte) (mode & 0x0F);
-		
-		byte _mode = 0;
-		switch(pin){
-		case 2: case 3: case 5: case 8: case 9: case 10: case 11: case 12:
-			_mode = INPUT;
-			break;
-		case 21:
-			_mode = ANALOG;
-			break;
-		}
+		byte _mode = (byte) (mode & 0x0F);
 		
 		if(pins == null) {
 			return;
@@ -512,8 +497,10 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		if(pinInfo.getPin() == 23) {
 			progress.dismiss();
-			if (timerFlag == true)
+			if (timerFlag == true) {
 				timerTask.cancel(); 
+				InstrumentHandler.SetMode(protocol, sp, pins);
+			}
 			if(pinInfo.getValue() == 0){
 				InstrumentHandler.switch2_flag = 0;
 			}
@@ -524,43 +511,73 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		// Determine instrument
 		if(InstrumentHandler.switch1_flag != -1 && InstrumentHandler.switch2_flag != -1) {
-			InstrumentHandler.checkFlags();
-		}
-		
+			InstrumentHandler.CheckFlags(MainActivity.this);
+		}		
 		try {
 			if(!isFirstReadPin) {
 				if(buttonPins.contains(pinInfo.getPin())) { // Check for button
 					if(pinInfo.getValue() == 1) { // Button pressed
 						switch(pinInfo.getPin()) { // Check for which button
 							case 2:
-								InstrumentHandler.PlaySound(MainActivity.this, 1);
+								InstrumentHandler.PlaySound(MainActivity.this, 1, -1);
 								break;
 							case 3:
-								InstrumentHandler.PlaySound(MainActivity.this, 2);
+								InstrumentHandler.PlaySound(MainActivity.this, 2, -1);
 								break;
 							case 5:
-								InstrumentHandler.PlaySound(MainActivity.this, 3);
+								InstrumentHandler.PlaySound(MainActivity.this, 3, -1);
 								break;
 							case 8:
-								InstrumentHandler.PlaySound(MainActivity.this, 4);
+								InstrumentHandler.PlaySound(MainActivity.this, 4, -1);
 								break;
 							case 9:
-								InstrumentHandler.PlaySound(MainActivity.this, 5);
+								InstrumentHandler.PlaySound(MainActivity.this, 5, -1);
 								break;
 							case 10:
-								InstrumentHandler.PlaySound(MainActivity.this, 6);
+								InstrumentHandler.PlaySound(MainActivity.this, 6, -1);
 								break;
 							case 11:
-								InstrumentHandler.PlaySound(MainActivity.this, 7);
+								InstrumentHandler.PlaySound(MainActivity.this, 7, -1);
 								break;
 							case 12:
-								InstrumentHandler.PlaySound(MainActivity.this, 8);
+								InstrumentHandler.PlaySound(MainActivity.this, 8, -1);
+								break;
+						}
+					}
+					else if(pinInfo.getValue() == 0) { // Button pressed
+						switch(pinInfo.getPin()) { // Check for which button
+							case 2:
+								InstrumentHandler.StopSound(MainActivity.this, 1);
+								break;
+							case 3:
+								InstrumentHandler.StopSound(MainActivity.this, 2);
+								break;
+							case 5:
+								InstrumentHandler.StopSound(MainActivity.this, 3);
+								break;
+							case 8:
+								InstrumentHandler.StopSound(MainActivity.this, 4);
+								break;
+							case 9:
+								InstrumentHandler.StopSound(MainActivity.this, 5);
+								break;
+							case 10:
+								InstrumentHandler.StopSound(MainActivity.this, 6);
+								break;
+							case 11:
+								InstrumentHandler.StopSound(MainActivity.this, 7);
+								break;
+							case 12:
+								InstrumentHandler.StopSound(MainActivity.this, 8);
 								break;
 						}
 					}
 				}
-				if(pinInfo.getPin() == 21) {
-					InstrumentHandler.flex_flag = pinInfo.getValue();
+				if(pinInfo.getPin() == 21) { // Flex sensor
+					InstrumentHandler.flex = pinInfo.getValue();
+				}
+				if(pinInfo.getPin() == 18) { // Accelerometer
+					InstrumentHandler.accx = pinInfo.getValue();
 				}
 			}
 		}
@@ -569,7 +586,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		
 		// Button Pin 2, 3, 5, 8, 9, 10, 11, 12
-		// Flex Pin 21
+		// Flex Sensor Pin 21
 		// Switch Pin 22, 23
 		// Press|Switch on/off - 1/0
 		
@@ -593,7 +610,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						protocol.queryProtocolVersion();
 					}
 					if (MainActivity.this != null) {
-						Toast.makeText(MainActivity.this, "Retry it!", Toast.LENGTH_SHORT).show();
 						handler.sendEmptyMessageDelayed(2, timeout);
 					}
 				}
@@ -602,9 +618,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				if (pins.size() == 0) {
 					if (protocol != null) {
 						protocol.queryProtocolVersion();
-					}
-					if (MainActivity.this != null) {
-						Toast.makeText(MainActivity.this, "Retry it again!", Toast.LENGTH_SHORT).show();
 					}
 					timer.schedule(timerTask, timeout);
 					timerFlag = true;

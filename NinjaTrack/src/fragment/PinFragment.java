@@ -17,11 +17,14 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelUuid;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -89,7 +92,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		pins_list.setEnabled(false);
 		
 		progress = new ProgressDialog(getActivity());
-		progress.setMessage("Retrieving pin");
+		progress.setMessage("Retrieving pin information");
 		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		progress.setIndeterminate(true);
 		progress.show();
@@ -444,7 +447,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		if (pins == null) {
 			return;
 		}
-
+		
 		if (isFirstReadPin) {
 			Pin pinInfo = new Pin();
 			pinInfo.setPin(pin);
@@ -601,7 +604,6 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 				break;
 			case IRBLProtocol.ANALOG:
 				holder.analog.setVisibility(View.VISIBLE);
-				System.out.println(pinInfo.getValue());
 				holder.analog.setText("" + pinInfo.getValue());
 				break;
 			case IRBLProtocol.SERVO: case IRBLProtocol.PWM:
@@ -737,6 +739,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 						public void onClick(View view) {
 							if (mProtocol != null) {
 								mProtocol.setPinMode(btn_pin, btn_mode);
+								savePreferences(btn_pin, btn_mode);
 							}
 							select_window.setVisibility(View.INVISIBLE);
 						}
@@ -789,5 +792,12 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 			return STR_PWM;
 		}
 		return null;
+	}
+	
+	protected void savePreferences(int key, int value) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		Editor editor = sp.edit();
+		editor.putInt(Integer.toString(key), value);
+		editor.commit();
 	}
 }

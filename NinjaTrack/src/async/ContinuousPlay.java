@@ -42,13 +42,13 @@ public class ContinuousPlay extends AsyncTask<Void, Void, Void>{
 						mediaPlayer = null;
 					}
 				});
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

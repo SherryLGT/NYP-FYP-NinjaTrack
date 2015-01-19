@@ -1,12 +1,13 @@
 package adapter;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import model.Pin;
 
 import redbearprotocol.RBLProtocol;
 
-import activity.MainActivity;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
@@ -18,12 +19,19 @@ import async.ContinuousPlay;
 
 public abstract class InstrumentHandler {
 	
-	// No value -1
-	public static int switch1_flag = -1;
-	public static int switch2_flag = -1;
+	public static final int RECORDER_FLAG = 0x00;
+	public static final int SAXOPHONE_FLAG = 0x01;
+	public static final int DRUM_FLAG = 0x02;
+	public static final int BELL_FLAG = 0x03;
+	public static final int HARP_FLAG = 0x04;
+	
+	public static int switch1_flag = -1; // No value -1
+	public static int switch2_flag = -1; // No value -1
 	public static int flex;
 	public static int accx;
+	public static Deque<Integer> accx_stack = new ArrayDeque<Integer>();
 	
+	// Files to play
 	public static String button1;
 	public static String button2;
 	public static String button3;
@@ -33,8 +41,11 @@ public abstract class InstrumentHandler {
 	public static String button7;
 	public static String button8;
 	public static String drum;
-	public static boolean toPlay = true;
-
+	
+	public static boolean enableDrum = true; // Within boundary
+	public static boolean resetDrum = true; // Played before or not
+	public static boolean readAccx = false;
+	
 	public static ContinuousPlay sound1;
 	public static ContinuousPlay sound2;
 	public static ContinuousPlay sound3;
@@ -51,10 +62,47 @@ public abstract class InstrumentHandler {
 			}
 		}
 	}
+	
+	public static int CheckFlags() {
 		
-	public static void CheckFlags(MainActivity activity) {
 		if(switch1_flag == 0 && switch2_flag == 0) {
 			if(flex > 26) { // Recorder
+				return RECORDER_FLAG;
+			}
+			else { // Saxophone
+				return SAXOPHONE_FLAG;
+			}
+		}
+		else {
+			if(switch1_flag == 0 && switch2_flag == 1) {
+				// Drum
+				if(accx >= 520) {
+					enableDrum = true;
+				}
+				else {
+					enableDrum = false;
+					resetDrum = false;
+				}
+				
+				return DRUM_FLAG;
+			}
+			else if(switch1_flag == 1 && switch2_flag == 0) {
+				if(IsMoving()) { // Bell
+					return BELL_FLAG;
+				}
+				else { // Harp
+					return HARP_FLAG;
+				}
+			}
+		}
+		return -1;
+	}
+	
+	public static void SetSound() throws IOException {
+		int flag = CheckFlags();
+		
+		switch(flag) {
+			case RECORDER_FLAG:
 				button1 = "recorder/Recorder 1.mp3";
 				button2 = "recorder/Recorder 2.mp3";
 				button3 = "recorder/Recorder 3.mp3";
@@ -63,8 +111,9 @@ public abstract class InstrumentHandler {
 				button6 = "recorder/Recorder 6.mp3";
 				button7 = "recorder/Recorder 7.mp3";
 				button8 = "recorder/Recorder 8.mp3";
-			}
-			else { // Saxophone
+				break;
+				
+			case SAXOPHONE_FLAG:
 				button1 = "saxophone/Saxophone 1.mp3";
 				button2 = "saxophone/Saxophone 2.mp3";
 				button3 = "saxophone/Saxophone 3.mp3";
@@ -73,51 +122,51 @@ public abstract class InstrumentHandler {
 				button6 = "saxophone/Saxophone 6.mp3";
 				button7 = "saxophone/Saxophone 7.mp3";
 				button8 = "saxophone/Saxophone 8.mp3";
-			}
-		}
-		else {
-			button1 = "";
-			button2 = "";
-			button3 = "";
-			button4 = "";
-			button5 = "";
-			button6 = "";
-			button7 = "";
-			button8 = "";
-
-			if(switch1_flag == 0 && switch2_flag == 1) {
-				if(accx >= 530) { // Drum
-					drum = "drum/Drum.mp3";
-					try {
-						if(toPlay) {
-							PlaySound(activity, -1, 0);
-							toPlay = false;
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				else {
-					drum = "";
-					toPlay = true;
-				}
-			}
-			else if(switch1_flag == 1 && switch2_flag == 0) {
-				// if.. TODO: Include flex checking
-				if(true) { // Bell
-					
-				}
-				else { // Harp
-					
-				}
-			}
+				break;
+				
+			case DRUM_FLAG:
+				drum = "drum/Drum.mp3";
+				break;
+				
+			case BELL_FLAG:
+				button1 = "handbell/Bell.mp3";
+				button2 = "handbell/Bell.mp3";
+				button3 = "handbell/Bell.mp3";
+				button4 = "handbell/Bell.mp3";
+				button5 = "handbell/Bell.mp3";
+				button6 = "handbell/Bell.mp3";
+				button7 = "handbell/Bell.mp3";
+				button8 = "handbell/Bell.mp3";
+				break;
+				
+			case HARP_FLAG:
+				button1 = "harp/Harp.mp3";
+				button2 = "harp/Harp.mp3";
+				button3 = "harp/Harp.mp3";
+				button4 = "harp/Harp.mp3";
+				button5 = "harp/Harp.mp3";
+				button6 = "harp/Harp.mp3";
+				button7 = "harp/Harp.mp3";
+				button8 = "harp/Harp.mp3";
+				break;
 		}
 	}
 	
-	public static void PlaySound(Activity activity, final int buttonNo, final int drumNo) throws IOException {
+	public static void PlaySound(Activity activity, final int buttonNo) throws IOException {
+		
+		int flag = CheckFlags();
 		String toPlayFile = null;
 		
-		if(buttonNo != -1) {
+		if(flag == DRUM_FLAG) {
+			if(enableDrum && !resetDrum) {
+				toPlayFile = drum;				
+				resetDrum = true;
+			}
+			else {
+				return;
+			}
+		}
+		else if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG || flag == BELL_FLAG || flag == HARP_FLAG) {
 			switch(buttonNo) {
 				case 1:
 					toPlayFile = button1;
@@ -143,14 +192,11 @@ public abstract class InstrumentHandler {
 				case 8:
 					toPlayFile = button8;
 					break;
+				default:
+					return;
 			}
-		}
-		else if(drumNo != -1) {
-			toPlayFile = drum;
-		}
-		
-		if(toPlayFile != "" || !toPlayFile.equals("")) {
-			if(buttonNo != -1){
+			
+			if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG) {
 				ContinuousPlay cp = new ContinuousPlay(activity, toPlayFile);
 				switch(buttonNo) {
 					case 1:
@@ -186,24 +232,30 @@ public abstract class InstrumentHandler {
 						sound8.execute();
 						break;
 				}
-			}
-			else if(drumNo != -1){
-				AssetFileDescriptor data = activity.getAssets().openFd(toPlayFile);				
-				MediaPlayer mediaPlayer = new MediaPlayer();
-				mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-				mediaPlayer.setDataSource(data.getFileDescriptor(), data.getStartOffset(), data.getLength());
-				mediaPlayer.prepare();
-//				int duration = mediaPlayer.getDuration();
-				mediaPlayer.start();
 				
-				mediaPlayer.setOnCompletionListener(new OnCompletionListener() {
-					@Override
-					public void onCompletion(MediaPlayer mediaPlayer) {
-						mediaPlayer.release();
-						mediaPlayer = null;
-					}
-				});
+				return;
 			}
+		}
+		else {
+			return;
+		}
+		
+		if(toPlayFile != "" || !toPlayFile.equals("") || toPlayFile != null) {
+			AssetFileDescriptor data = activity.getAssets().openFd(toPlayFile);
+			MediaPlayer mediaPlayer = new MediaPlayer();
+			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			mediaPlayer.setDataSource(data.getFileDescriptor(), data.getStartOffset(), data.getLength());
+			mediaPlayer.prepare();
+	//		int duration = mediaPlayer.getDuration();
+			mediaPlayer.start();
+			
+			mediaPlayer.setOnCompletionListener(new OnCompletionListener() {
+				@Override
+				public void onCompletion(MediaPlayer mediaPlayer) {
+					mediaPlayer.release();
+					mediaPlayer = null;
+				}
+			});
 		}
 	}
 	
@@ -243,6 +295,43 @@ public abstract class InstrumentHandler {
 					sound8.cancel(true);
 					break;
 			}
+		}
+	}
+	
+	public static boolean IsMoving(){
+		if(accx_stack.size() >= 5){
+			int lowest = 1000;
+			int highest = 0;
+			Deque<Integer> temp = new ArrayDeque<Integer>();
+			while(accx_stack.size() > 0){
+				int single = accx_stack.pop();
+				if(single < lowest){
+					lowest = single;
+				}
+				if(single > highest){
+					highest = single;
+				}
+				temp.addLast(single);
+			}
+			accx_stack = temp;
+			int difference = highest - lowest;
+			if(difference > 5){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	public static void MonitorAccx(int change){
+		if(accx_stack.size() < 5){
+			accx_stack.push(change);
+		}
+		else{
+			accx_stack.pollLast();
+			accx_stack.push(change);
 		}
 	}
 }

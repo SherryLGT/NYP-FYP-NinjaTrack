@@ -54,7 +54,6 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
@@ -509,42 +508,47 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			}
 		}
 		
-		// Determine instrument
-		if(InstrumentHandler.switch1_flag != -1 && InstrumentHandler.switch2_flag != -1) {
-			InstrumentHandler.CheckFlags(MainActivity.this);
-		}		
+		if(pinInfo.getPin() == 21) { // Flex sensor
+			InstrumentHandler.flex = pinInfo.getValue();
+		}
+		if(pinInfo.getPin() == 18) { // Accelerometer
+			InstrumentHandler.accx = pinInfo.getValue();
+		}
+		
 		try {
+			InstrumentHandler.SetSound();
+
 			if(!isFirstReadPin) {
 				if(buttonPins.contains(pinInfo.getPin())) { // Check for button
 					if(pinInfo.getValue() == 1) { // Button pressed
 						switch(pinInfo.getPin()) { // Check for which button
 							case 2:
-								InstrumentHandler.PlaySound(MainActivity.this, 1, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 1);
 								break;
 							case 3:
-								InstrumentHandler.PlaySound(MainActivity.this, 2, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 2);
 								break;
 							case 5:
-								InstrumentHandler.PlaySound(MainActivity.this, 3, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 3);
 								break;
 							case 8:
-								InstrumentHandler.PlaySound(MainActivity.this, 4, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 4);
 								break;
 							case 9:
-								InstrumentHandler.PlaySound(MainActivity.this, 5, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 5);
 								break;
 							case 10:
-								InstrumentHandler.PlaySound(MainActivity.this, 6, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 6);
 								break;
 							case 11:
-								InstrumentHandler.PlaySound(MainActivity.this, 7, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 7);
 								break;
 							case 12:
-								InstrumentHandler.PlaySound(MainActivity.this, 8, -1);
+								InstrumentHandler.PlaySound(MainActivity.this, 8);
 								break;
 						}
 					}
-					else if(pinInfo.getValue() == 0) { // Button pressed
+					else if(pinInfo.getValue() == 0 && (InstrumentHandler.CheckFlags() == InstrumentHandler.RECORDER_FLAG || InstrumentHandler.CheckFlags() == InstrumentHandler.SAXOPHONE_FLAG)) { // Button pressed
 						switch(pinInfo.getPin()) { // Check for which button
 							case 2:
 								InstrumentHandler.StopSound(MainActivity.this, 1);
@@ -573,15 +577,11 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						}
 					}
 				}
-				if(pinInfo.getPin() == 21) { // Flex sensor
-					InstrumentHandler.flex = pinInfo.getValue();
-				}
-				if(pinInfo.getPin() == 18) { // Accelerometer
-					InstrumentHandler.accx = pinInfo.getValue();
+				else {
+					InstrumentHandler.PlaySound(MainActivity.this, -1);
 				}
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		

@@ -112,7 +112,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 					MainActivity.this.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							new AlertDialog.Builder(MainActivity.this).setTitle("No response").setMessage("Please reconnect to device.").setPositiveButton("OK", new OnClickListener(){
+							new AlertDialog.Builder(MainActivity.this).setTitle("No response").setMessage("Please reconnect to device.").setPositiveButton("OK", new OnClickListener() {
 								@Override
 								public void onClick(DialogInterface arg0, int arg1) {
 									MainActivity.this.finish();
@@ -196,7 +196,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				redBearService.readRssi(device.getAddress());
 			}
 		}
-		if(protocol != null){
+		if(protocol != null) {
 			protocol.queryProtocolVersion();
 		}
 		handler.sendEmptyMessageDelayed(1, timeout);
@@ -487,7 +487,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		// Switch Pins
 		if(pinInfo.getPin() == 22) {
-			if(pinInfo.getValue() == 0){
+			if(pinInfo.getValue() == 0) {
 				InstrumentHandler.switch1_flag = 0;
 			}
 			else {
@@ -500,7 +500,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				timerTask.cancel(); 
 				InstrumentHandler.SetMode(protocol, sp, pins);
 			}
-			if(pinInfo.getValue() == 0){
+			if(pinInfo.getValue() == 0) {
 				InstrumentHandler.switch2_flag = 0;
 			}
 			else {
@@ -513,9 +513,16 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		if(pinInfo.getPin() == 18) { // Accelerometer
 			InstrumentHandler.accx = pinInfo.getValue();
+			InstrumentHandler.MonitorAccx(pinInfo.getValue());
+			try {
+				InstrumentHandler.PlaySound(MainActivity.this, -1);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		try {
+			System.out.println("BELLFLAG: " + InstrumentHandler.CheckFlags());
 			InstrumentHandler.SetSound();
 
 			if(!isFirstReadPin) {
@@ -548,7 +555,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 								break;
 						}
 					}
-					else if(pinInfo.getValue() == 0 && (InstrumentHandler.CheckFlags() == InstrumentHandler.RECORDER_FLAG || InstrumentHandler.CheckFlags() == InstrumentHandler.SAXOPHONE_FLAG)) { // Button pressed
+					else if(pinInfo.getValue() == 0 && (InstrumentHandler.CheckFlags() == InstrumentHandler.RECORDER_FLAG || InstrumentHandler.CheckFlags() == InstrumentHandler.SAXOPHONE_FLAG)) {
 						switch(pinInfo.getPin()) { // Check for which button
 							case 2:
 								InstrumentHandler.StopSound(MainActivity.this, 1);
@@ -575,6 +582,9 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 								InstrumentHandler.StopSound(MainActivity.this, 8);
 								break;
 						}
+					}
+					else if(pinInfo.getValue() == 0 && InstrumentHandler.CheckFlags() == InstrumentHandler.BELL_FLAG) {
+						InstrumentHandler.StopSound(MainActivity.this, -1);
 					}
 				}
 				else {

@@ -41,9 +41,12 @@ public abstract class InstrumentHandler {
 	public static String button7;
 	public static String button8;
 	public static String drum;
+	public static String bell;
 	
 	public static boolean enableDrum = true; // Within boundary
 	public static boolean resetDrum = true; // Played before or not
+	public static boolean enableBell = true; // Within boundary
+	public static boolean resetBell = true; // Played before or not
 	public static boolean readAccx = false;
 	
 	public static ContinuousPlay sound1;
@@ -88,6 +91,14 @@ public abstract class InstrumentHandler {
 			}
 			else if(switch1_flag == 1 && switch2_flag == 0) {
 				if(IsMoving()) { // Bell
+					if(accx >= 460) {
+						enableBell = true;
+					}
+					else {
+						enableBell = false;
+						resetBell = false;
+					}
+					
 					return BELL_FLAG;
 				}
 				else { // Harp
@@ -166,7 +177,44 @@ public abstract class InstrumentHandler {
 				return;
 			}
 		}
-		else if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG || flag == BELL_FLAG || flag == HARP_FLAG) {
+		else if(flag == BELL_FLAG) {			
+			switch(buttonNo) {
+				case 1:
+					bell = button1;
+					break;
+				case 2:
+					bell = button2;
+					break;
+				case 3:
+					bell = button3;
+					break;
+				case 4:
+					bell = button4;
+					break;
+				case 5:
+					bell = button5;
+					break;
+				case 6:
+					bell = button6;
+					break;
+				case 7:
+					bell = button7;
+					break;
+				case 8:
+					bell = button8;
+					break;
+			}
+			if(enableBell && !resetBell) {
+				toPlayFile = bell;				
+				resetBell = true;
+			}
+			else {
+				return;
+			}
+		}
+		else if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG || flag == HARP_FLAG) {
+			enableBell = false;
+			
 			switch(buttonNo) {
 				case 1:
 					toPlayFile = button1;
@@ -296,26 +344,33 @@ public abstract class InstrumentHandler {
 					break;
 			}
 		}
+		else {
+			bell = "";
+		}
 	}
 	
-	public static boolean IsMoving(){
-		if(accx_stack.size() >= 5){
-			int lowest = 1000;
-			int highest = 0;
+	public static boolean IsMoving() {
+		if(accx_stack.size() >= 5) {
+			int movement = 0;
+			int prev = 0;
+			int current = 0;
 			Deque<Integer> temp = new ArrayDeque<Integer>();
-			while(accx_stack.size() > 0){
-				int single = accx_stack.pop();
-				if(single < lowest){
-					lowest = single;
+			int count = 0;
+			while(accx_stack.size() > 0) {
+				int single = accx_stack.pollLast();
+				temp.addFirst(single);
+				if(count == 0) {
+					prev = single;
 				}
-				if(single > highest){
-					highest = single;
+				else{
+					current = single;
+					movement += Math.abs(current - prev);
+					prev = current;
 				}
-				temp.addLast(single);
+				count++;
 			}
 			accx_stack = temp;
-			int difference = highest - lowest;
-			if(difference > 5){
+			if(movement  >= 10) {
 				return true;
 			}
 			else{
@@ -325,8 +380,8 @@ public abstract class InstrumentHandler {
 		return false;
 	}
 	
-	public static void MonitorAccx(int change){
-		if(accx_stack.size() < 5){
+	public static void MonitorAccx(int change) {
+		if(accx_stack.size() < 5) {
 			accx_stack.push(change);
 		}
 		else{

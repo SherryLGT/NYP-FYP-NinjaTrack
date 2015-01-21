@@ -37,11 +37,15 @@ import adapter.InstrumentHandler;
 import adapter.NavDrawerListAdapter;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -54,8 +58,10 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
 
 import fragment.PageSlidingTabStripFragment;
 import fragment.ProfileFragment;
@@ -68,6 +74,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private DrawerLayout drawerLayout;
 	private ListView drawerList;
 	private ActionBarDrawerToggle drawerToggle;
+	private MenuItem startRecord, stopRecord;
 
 	private CharSequence title;
 	private CharSequence drawerTitle;	
@@ -183,6 +190,8 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		if (savedInstanceState == null) {
 			selectItem(0);
 		}
+		
+		MainActivity.this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 	}
 	
 	@Override
@@ -207,6 +216,10 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.main, menu);
+		
+		startRecord = (MenuItem) menu.findItem(R.id.action_start_record);
+		stopRecord = (MenuItem) menu.findItem(R.id.action_stop_record);
+		
 		return true;
 	}
 	
@@ -215,14 +228,37 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 
 		switch (item.getItemId()) {
 
-			case android.R.id.home: {
+			case android.R.id.home: 
 				if (drawerLayout.isDrawerOpen(drawerList)) {
 					drawerLayout.closeDrawer(drawerList);
 				} else {
 					drawerLayout.openDrawer(drawerList);
 				}
 				break;
-			}
+				
+			case R.id.action_about:
+				Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+				break;
+				
+			case R.id.action_start_record:
+				startRecord.setVisible(false);
+				stopRecord.setVisible(true);
+				
+				try {
+					InstrumentHandler.StartRecording();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				break;
+				
+			case R.id.action_stop_record:
+				startRecord.setVisible(true);
+				stopRecord.setVisible(false);
+				
+				ContentResolver contentResolver = getContentResolver();
+				Uri uri = InstrumentHandler.StopRecording(contentResolver);
+				sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+				break;
 		}
 
 		return super.onOptionsItemSelected(item);

@@ -1,5 +1,6 @@
 package adapter;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -9,11 +10,17 @@ import model.Pin;
 import redbearprotocol.RBLProtocol;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.SparseArray;
 import async.ContinuousPlay;
 
@@ -31,7 +38,6 @@ public abstract class InstrumentHandler {
 	public static int accx;
 	public static Deque<Integer> accx_stack = new ArrayDeque<Integer>();
 	
-	// Files to play
 	public static String button1;
 	public static String button2;
 	public static String button3;
@@ -57,6 +63,9 @@ public abstract class InstrumentHandler {
 	public static ContinuousPlay sound6;
 	public static ContinuousPlay sound7;
 	public static ContinuousPlay sound8;
+	
+	private static MediaRecorder mediaRecorder;
+	private static File audioFile = null; 
 	
 	public static void SetMode(RBLProtocol protocol, SharedPreferences sp, SparseArray<Pin> pins) {
 		for(int i = 0; i < pins.size(); i++) {
@@ -388,5 +397,41 @@ public abstract class InstrumentHandler {
 			accx_stack.pollLast();
 			accx_stack.push(change);
 		}
+	}
+	
+	public static void StartRecording() throws IOException {
+		File file = Environment.getExternalStorageDirectory();		
+		audioFile = File.createTempFile("new_audio", ".3gp", file);
+		
+		mediaRecorder = new MediaRecorder();
+		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+		mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
+		mediaRecorder.prepare();
+		mediaRecorder.start();
+	}
+	
+	public static Uri StopRecording(ContentResolver contentResolver) {
+		mediaRecorder.stop();
+		mediaRecorder.release();
+		Uri newUri = AddRecordingToMediaLibrary(contentResolver);
+		
+		return newUri; 
+	}
+	
+	private static Uri AddRecordingToMediaLibrary(ContentResolver contentResolver) {
+		long current = System.currentTimeMillis();
+		
+		ContentValues values = new ContentValues(4);
+		values.put(MediaStore.Audio.Media.TITLE, audioFile.getName() + (current / 1000));
+		values.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
+		values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/3gpp");
+		values.put(MediaStore.Audio.Media.DATA, audioFile.getAbsolutePath());
+		
+		Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+		Uri newUri = contentResolver.insert(base, values);
+		
+		return newUri;
 	}
 }

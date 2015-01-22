@@ -35,6 +35,7 @@ import model.Pin;
 import nyp.fypj.ninjatrack.R;
 import adapter.InstrumentHandler;
 import adapter.NavDrawerListAdapter;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
@@ -55,8 +56,11 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -223,6 +227,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		return true;
 	}
 	
+	@SuppressLint("InflateParams")
 	@Override
 	public boolean onOptionsItemSelected(com.actionbarsherlock.view.MenuItem item) {
 
@@ -243,9 +248,9 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			case R.id.action_start_record:
 				startRecord.setVisible(false);
 				stopRecord.setVisible(true);
-				
 				try {
 					InstrumentHandler.StartRecording();
+					Toast.makeText(MainActivity.this, "Recording started..", Toast.LENGTH_SHORT).show();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -255,9 +260,38 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				startRecord.setVisible(true);
 				stopRecord.setVisible(false);
 				
-				ContentResolver contentResolver = getContentResolver();
-				Uri uri = InstrumentHandler.StopRecording(contentResolver);
-				sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+				View rootView = LayoutInflater.from(this).inflate(R.layout.filename_dialog, null);
+				final EditText et_filename = (EditText) rootView.findViewById(R.id.et_filename);
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setView(rootView).setTitle("Input desired file name").setPositiveButton("Ok", null);
+				
+				final AlertDialog dialog = builder.create();
+				dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+					@Override
+					public void onShow(DialogInterface dialogInterface) {
+						Button btn_ok = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+						btn_ok.setOnClickListener(new View.OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								if(et_filename.getText().toString().length() > 1) {
+									InstrumentHandler.filename = et_filename.getText().toString();
+									
+									ContentResolver contentResolver = getContentResolver();
+									Uri uri = InstrumentHandler.StopRecording(contentResolver);
+									sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
+									
+									Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_SHORT).show();
+									dialog.dismiss();
+								}
+								else {
+									Toast.makeText(MainActivity.this, "Please enter file name", Toast.LENGTH_SHORT).show();
+								}
+							}
+						});
+					}
+				});
+				dialog.show();
 				break;
 		}
 
@@ -558,7 +592,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		
 		try {
-			System.out.println("BELLFLAG: " + InstrumentHandler.CheckFlags());
 			InstrumentHandler.SetSound();
 
 			if(!isFirstReadPin) {

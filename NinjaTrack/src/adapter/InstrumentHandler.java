@@ -64,8 +64,9 @@ public abstract class InstrumentHandler {
 	public static ContinuousPlay sound7;
 	public static ContinuousPlay sound8;
 	
+	public static String filename;
 	private static MediaRecorder mediaRecorder;
-	private static File audioFile = null; 
+	private static File folder, audioFile = null;
 	
 	public static void SetMode(RBLProtocol protocol, SharedPreferences sp, SparseArray<Pin> pins) {
 		for(int i = 0; i < pins.size(); i++) {
@@ -400,31 +401,44 @@ public abstract class InstrumentHandler {
 	}
 	
 	public static void StartRecording() throws IOException {
-		File file = Environment.getExternalStorageDirectory();		
-		audioFile = File.createTempFile("new_audio", ".3gp", file);
+		folder = new File(Environment.getExternalStorageDirectory() + "/NinjaTrack");
 		
-		mediaRecorder = new MediaRecorder();
-		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-		mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
-		mediaRecorder.prepare();
-		mediaRecorder.start();
+		if(folder.exists()) {
+			audioFile = File.createTempFile("temp_", ".3gp", folder);
+			
+			mediaRecorder = new MediaRecorder();
+			mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+			mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+			mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+			mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
+			mediaRecorder.prepare();
+			mediaRecorder.start();
+		}
+		else {
+			if(folder.mkdir()) {
+				audioFile = File.createTempFile("temp_", ".3gp", folder);
+				
+				mediaRecorder = new MediaRecorder();
+				mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+				mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+				mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+				mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
+				mediaRecorder.prepare();
+				mediaRecorder.start();
+			}
+		}
 	}
 	
 	public static Uri StopRecording(ContentResolver contentResolver) {
 		mediaRecorder.stop();
 		mediaRecorder.release();
-		Uri newUri = AddRecordingToMediaLibrary(contentResolver);
 		
-		return newUri; 
-	}
-	
-	private static Uri AddRecordingToMediaLibrary(ContentResolver contentResolver) {
+		audioFile.renameTo(new File(folder + "/" + filename + ".3gp"));
+		
 		long current = System.currentTimeMillis();
 		
 		ContentValues values = new ContentValues(4);
-		values.put(MediaStore.Audio.Media.TITLE, audioFile.getName() + (current / 1000));
+		values.put(MediaStore.Audio.Media.TITLE, audioFile.getName());
 		values.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
 		values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/3gpp");
 		values.put(MediaStore.Audio.Media.DATA, audioFile.getAbsolutePath());
@@ -432,6 +446,6 @@ public abstract class InstrumentHandler {
 		Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 		Uri newUri = contentResolver.insert(base, values);
 		
-		return newUri;
+		return newUri; 
 	}
 }

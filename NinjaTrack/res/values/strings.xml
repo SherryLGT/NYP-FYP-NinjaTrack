@@ -35,6 +35,9 @@
         <item>Hand Bell</item>
     </array>
     
+    <!-- Dialog -->
+    <string name="hint_filename">File name</string>
+    
     <!-- Profile -->
     <string name="lbl_name">Name</string>
     <string name="hint_name">Enter your name</string>

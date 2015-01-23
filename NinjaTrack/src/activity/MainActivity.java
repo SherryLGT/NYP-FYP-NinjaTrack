@@ -103,6 +103,8 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private int timeout = 3000;
 	private ProgressDialog progress;
 	
+	public static int position = 0;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -593,7 +595,29 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		try {
 			InstrumentHandler.SetSound();
-
+			
+			// Changing of tabs to respective instrument
+			if(InstrumentHandler.curr_flag != InstrumentHandler.prev_flag) {
+				switch(InstrumentHandler.CheckFlags()) {
+					case InstrumentHandler.RECORDER_FLAG:
+						MainActivity.position = 0;
+						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+						break;
+					case InstrumentHandler.SAXOPHONE_FLAG:
+						MainActivity.position = 2;
+						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+						break;
+					case InstrumentHandler.DRUM_FLAG:
+						MainActivity.position = 1;
+						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+						break;
+					case InstrumentHandler.BELL_FLAG:
+						MainActivity.position = 3;
+						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+						break;
+				}
+			}
+			
 			if(!isFirstReadPin) {
 				if(buttonPins.contains(pinInfo.getPin())) { // Check for button
 					if(pinInfo.getValue() == 1) { // Button pressed

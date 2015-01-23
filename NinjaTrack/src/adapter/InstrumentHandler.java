@@ -32,6 +32,8 @@ public abstract class InstrumentHandler {
 	public static final int BELL_FLAG = 0x03;
 	public static final int HARP_FLAG = 0x04;
 	
+	public static int curr_flag = -1; // No value -1
+	public static int prev_flag = -1; // No value -1
 	public static int switch1_flag = -1; // No value -1
 	public static int switch2_flag = -1; // No value -1
 	public static int flex;
@@ -77,13 +79,14 @@ public abstract class InstrumentHandler {
 	}
 	
 	public static int CheckFlags() {
+		int flag = -1;
 		
 		if(switch1_flag == 0 && switch2_flag == 0) {
 			if(flex > 26) { // Recorder
-				return RECORDER_FLAG;
+				flag = RECORDER_FLAG;
 			}
 			else { // Saxophone
-				return SAXOPHONE_FLAG;
+				flag = SAXOPHONE_FLAG;
 			}
 		}
 		else {
@@ -97,7 +100,7 @@ public abstract class InstrumentHandler {
 					resetDrum = false;
 				}
 				
-				return DRUM_FLAG;
+				flag = DRUM_FLAG;
 			}
 			else if(switch1_flag == 1 && switch2_flag == 0) {
 				if(IsMoving()) { // Bell
@@ -109,14 +112,26 @@ public abstract class InstrumentHandler {
 						resetBell = false;
 					}
 					
-					return BELL_FLAG;
+					flag = BELL_FLAG;
 				}
 				else { // Harp
-					return HARP_FLAG;
+					flag = HARP_FLAG;
 				}
 			}
 		}
-		return -1;
+		
+		System.out.println("FLAG : " + flag);
+		if(curr_flag == -1) {
+			curr_flag = flag;
+		}
+		else {
+			if(prev_flag != curr_flag) {
+				prev_flag = curr_flag;
+			}
+			curr_flag = flag;
+		}
+		
+		return flag;
 	}
 	
 	public static void SetSound() throws IOException {
@@ -180,7 +195,7 @@ public abstract class InstrumentHandler {
 		
 		if(flag == DRUM_FLAG) {
 			if(enableDrum && !resetDrum) {
-				toPlayFile = drum;				
+				toPlayFile = drum;
 				resetDrum = true;
 			}
 			else {

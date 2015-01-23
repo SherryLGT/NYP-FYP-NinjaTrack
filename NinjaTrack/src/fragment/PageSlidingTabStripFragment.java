@@ -1,5 +1,6 @@
 package fragment;
 
+import activity.MainActivity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -39,6 +40,7 @@ public class PageSlidingTabStripFragment extends Fragment {
 		ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
 		MyPagerAdapter adapter = new MyPagerAdapter(getChildFragmentManager());
 		pager.setAdapter(adapter);
+		pager.setCurrentItem(MainActivity.position);
 		tabs.setViewPager(pager);
 	}
 

@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 public class DeviceListActivity extends Activity {
 	
@@ -36,6 +37,7 @@ public class DeviceListActivity extends Activity {
 	private String DEVICE_NAME = "name";
 	private String DEVICE_ADDRESS = "address";
 	public static Device device;
+	private boolean close = false;
 
     private final long SCAN_PERIOD = 3000; // 3 seconds
 	
@@ -101,6 +103,23 @@ public class DeviceListActivity extends Activity {
 				startActivity(intent);
 			}
 		});
+	}
+
+	@Override
+	public void onBackPressed() {
+		if(close) {
+			super.onBackPressed();
+		}
+		else {
+			Toast.makeText(this, "Press back again to leave", Toast.LENGTH_SHORT).show();
+			close = true;
+			new Handler().postDelayed(new Runnable(){
+	        	@Override
+	        	public void run() {
+	    			close = false;
+	        	}
+	        }, 3000);
+		}
 	}
 
 	@Override

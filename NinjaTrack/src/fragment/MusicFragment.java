@@ -17,6 +17,7 @@
 package fragment;
 
 import nyp.fypj.ninjatrack.R;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import android.widget.FrameLayout.LayoutParams;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
+@SuppressLint("InflateParams")
 public class MusicFragment extends SherlockFragment{
 
 	private static final String ARG_POSITION = "position";

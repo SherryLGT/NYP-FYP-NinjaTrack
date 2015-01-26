@@ -82,6 +82,12 @@ public class MusicFragment extends SherlockFragment{
 				Fragment handBellFragment = new HandBellFragment();
 				getFragmentManager().beginTransaction().replace(R.id.tab_handbell, handBellFragment).commit();
 				break;
+			case 4:
+				View harpView = inflater.inflate(R.layout.tab_harp, null);
+				fl.addView(harpView);
+				Fragment harpFragment = new HarpFragment();
+				getFragmentManager().beginTransaction().replace(R.id.tab_harp, harpFragment).commit();
+				break;
 		}
 		return fl;
 	}

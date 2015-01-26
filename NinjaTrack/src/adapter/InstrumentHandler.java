@@ -120,7 +120,6 @@ public abstract class InstrumentHandler {
 			}
 		}
 		
-		System.out.println("FLAG : " + flag);
 		if(curr_flag == -1) {
 			curr_flag = flag;
 		}

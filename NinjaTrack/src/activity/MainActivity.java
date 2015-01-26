@@ -615,6 +615,10 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						MainActivity.position = 3;
 						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
 						break;
+					case InstrumentHandler.HARP_FLAG:
+						MainActivity.position = 4;
+						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+						break;
 				}
 			}
 			

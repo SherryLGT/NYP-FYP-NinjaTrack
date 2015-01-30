@@ -1,6 +1,7 @@
 package activity;
 
 import nyp.fypj.ninjatrack.R;
+import adapter.InstrumentHandler;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -27,6 +28,10 @@ public class SplashActivity extends Activity {
         
 		setContentView(R.layout.activity_splashscreen);	
 		
+//		InstrumentHandler.MixFiles(this, new String[]{"recorder/Recorder 1.mp3", "saxophone/Saxophone 3.mp3"});
+//		InstrumentHandler.LoadSoundPool(this, new String[]{"recorder/Recorder 1.mp3","recorder/Recorder 2.mp3","recorder/Recorder 3.mp3","recorder/Recorder 4.mp3","recorder/Recorder 5.mp3","recorder/Recorder 6.mp3","recorder/Recorder 7.mp3","recorder/Recorder 8.mp3"});
+
+		InstrumentHandler.LoadSoundPool(this);
 		// Initializes Bluetooth adapter
 		bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 		bluetoothAdapter = bluetoothManager.getAdapter();

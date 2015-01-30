@@ -6,18 +6,16 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import model.Pin;
-
 import redbearprotocol.RBLProtocol;
-
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
+import android.media.SoundPool;
+import android.media.SoundPool.OnLoadCompleteListener;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -32,6 +30,27 @@ public abstract class InstrumentHandler {
 	public static final int BELL_FLAG = 0x03;
 	public static final int HARP_FLAG = 0x04;
 	
+	private static int recorder1Id;
+	private static int recorder2Id;
+	private static int recorder3Id;
+	private static int recorder4Id;
+	private static int recorder5Id;
+	private static int recorder6Id;
+	private static int recorder7Id;
+	private static int recorder8Id;
+	private static int saxophone1Id;
+	private static int saxophone2Id;
+	private static int saxophone3Id;
+	private static int saxophone4Id;
+	private static int saxophone5Id;
+	private static int saxophone6Id;
+	private static int saxophone7Id;
+	private static int saxophone8Id;
+	private static int drumId;
+	private static int snareId;
+	private static int bellId;
+	private static int harpId;
+	
 	public static int curr_flag = -1; // No value -1
 	public static int prev_flag = -1; // No value -1
 	public static int switch1_flag = -1; // No value -1
@@ -40,16 +59,27 @@ public abstract class InstrumentHandler {
 	public static int accx;
 	public static Deque<Integer> accx_stack = new ArrayDeque<Integer>();
 	
-	public static String button1;
-	public static String button2;
-	public static String button3;
-	public static String button4;
-	public static String button5;
-	public static String button6;
-	public static String button7;
-	public static String button8;
-	public static String drum;
-	public static String bell;
+	public static String button1Path;
+	public static String button2Path;
+	public static String button3Path;
+	public static String button4Path;
+	public static String button5Path;
+	public static String button6Path;
+	public static String button7Path;
+	public static String button8Path;
+	public static String drumPath;
+	public static String bellPath;
+	
+	public static int button1;
+	public static int button2;
+	public static int button3;
+	public static int button4;
+	public static int button5;
+	public static int button6;
+	public static int button7;
+	public static int button8;
+	public static int drum;
+	public static int bell;
 	
 	public static boolean enableDrum = true; // Within boundary
 	public static boolean resetDrum = true; // Played before or not
@@ -68,7 +98,43 @@ public abstract class InstrumentHandler {
 	
 	public static String filename;
 	private static MediaRecorder mediaRecorder;
-	private static File folder, audioFile = null;
+	private static File audioFile = null;
+	private static File folder = new File(Environment.getExternalStorageDirectory() + "/NinjaTrack");
+	
+	public static SoundPool sp;
+	
+	public static void LoadSoundPool(Activity activity) {
+		sp = new SoundPool(100, AudioManager.STREAM_MUSIC, 0); // maxStream, streamType, srcQuality
+		sp.setOnLoadCompleteListener(new OnLoadCompleteListener() {
+			@Override
+			public void onLoadComplete(SoundPool sp, int id, int status) {
+				System.out.println("SoundPool loaded:" + id);
+			}
+		});
+		try {
+			recorder1Id = sp.load(activity.getAssets().openFd("recorder/Recorder 1.mp3"), 0);
+			recorder2Id = sp.load(activity.getAssets().openFd("recorder/Recorder 2.mp3"), 0);
+			recorder3Id = sp.load(activity.getAssets().openFd("recorder/Recorder 3.mp3"), 0);
+			recorder4Id = sp.load(activity.getAssets().openFd("recorder/Recorder 4.mp3"), 0);
+			recorder5Id = sp.load(activity.getAssets().openFd("recorder/Recorder 5.mp3"), 0);
+			recorder6Id = sp.load(activity.getAssets().openFd("recorder/Recorder 6.mp3"), 0);
+			recorder7Id = sp.load(activity.getAssets().openFd("recorder/Recorder 7.mp3"), 0);
+			recorder8Id = sp.load(activity.getAssets().openFd("recorder/Recorder 8.mp3"), 0);
+			saxophone1Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 1.mp3"), 0);
+			saxophone2Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 2.mp3"), 0);
+			saxophone3Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 3.mp3"), 0);
+			saxophone4Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 4.mp3"), 0);
+			saxophone5Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 5.mp3"), 0);
+			saxophone6Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 6.mp3"), 0);
+			saxophone7Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 7.mp3"), 0);
+			saxophone8Id = sp.load(activity.getAssets().openFd("saxophone/Saxophone 8.mp3"), 0);
+			drumId = sp.load(activity.getAssets().openFd("drum/Drum.mp3"), 0);
+			snareId = sp.load(activity.getAssets().openFd("drum/Snare.mp3"), 0);
+			bellId = sp.load(activity.getAssets().openFd("handbell/Bell.mp3"), 0);
+			harpId = sp.load(activity.getAssets().openFd("harp/Harp.mp3"), 0);
+		}
+		catch(IOException e) {}
+	}
 	
 	public static void SetMode(RBLProtocol protocol, SharedPreferences sp, SparseArray<Pin> pins) {
 		for(int i = 0; i < pins.size(); i++) {
@@ -138,63 +204,101 @@ public abstract class InstrumentHandler {
 		
 		switch(flag) {
 			case RECORDER_FLAG:
-				button1 = "recorder/Recorder 1.mp3";
-				button2 = "recorder/Recorder 2.mp3";
-				button3 = "recorder/Recorder 3.mp3";
-				button4 = "recorder/Recorder 4.mp3";
-				button5 = "recorder/Recorder 5.mp3";
-				button6 = "recorder/Recorder 6.mp3";
-				button7 = "recorder/Recorder 7.mp3";
-				button8 = "recorder/Recorder 8.mp3";
+				button1Path = "recorder/Recorder 1.mp3";
+				button2Path = "recorder/Recorder 2.mp3";
+				button3Path = "recorder/Recorder 3.mp3";
+				button4Path = "recorder/Recorder 4.mp3";
+				button5Path = "recorder/Recorder 5.mp3";
+				button6Path = "recorder/Recorder 6.mp3";
+				button7Path = "recorder/Recorder 7.mp3";
+				button8Path = "recorder/Recorder 8.mp3";
+				
+				button1 = recorder1Id;
+				button2 = recorder2Id;
+				button3 = recorder3Id;
+				button4 = recorder4Id;
+				button5 = recorder5Id;
+				button6 = recorder6Id;
+				button7 = recorder7Id;
+				button8 = recorder8Id;
 				break;
 				
 			case SAXOPHONE_FLAG:
-				button1 = "saxophone/Saxophone 1.mp3";
-				button2 = "saxophone/Saxophone 2.mp3";
-				button3 = "saxophone/Saxophone 3.mp3";
-				button4 = "saxophone/Saxophone 4.mp3";
-				button5 = "saxophone/Saxophone 5.mp3";
-				button6 = "saxophone/Saxophone 6.mp3";
-				button7 = "saxophone/Saxophone 7.mp3";
-				button8 = "saxophone/Saxophone 8.mp3";
+				button1Path = "saxophone/Saxophone 1.mp3";
+				button2Path = "saxophone/Saxophone 2.mp3";
+				button3Path = "saxophone/Saxophone 3.mp3";
+				button4Path = "saxophone/Saxophone 4.mp3";
+				button5Path = "saxophone/Saxophone 5.mp3";
+				button6Path = "saxophone/Saxophone 6.mp3";
+				button7Path = "saxophone/Saxophone 7.mp3";
+				button8Path = "saxophone/Saxophone 8.mp3";
+				
+				button1 = saxophone1Id;
+				button2 = saxophone2Id;
+				button3 = saxophone3Id;
+				button4 = saxophone4Id;
+				button5 = saxophone5Id;
+				button6 = saxophone6Id;
+				button7 = saxophone7Id;
+				button8 = saxophone8Id;
 				break;
 				
 			case DRUM_FLAG:
-				drum = "drum/Drum.mp3";
+				drumPath = "drum/Drum.mp3";
+				
+				drum = drumId;
 				break;
 				
 			case BELL_FLAG:
-				button1 = "handbell/Bell.mp3";
-				button2 = "handbell/Bell.mp3";
-				button3 = "handbell/Bell.mp3";
-				button4 = "handbell/Bell.mp3";
-				button5 = "handbell/Bell.mp3";
-				button6 = "handbell/Bell.mp3";
-				button7 = "handbell/Bell.mp3";
-				button8 = "handbell/Bell.mp3";
+				button1Path = "handbell/Bell.mp3";
+				button2Path = "handbell/Bell.mp3";
+				button3Path = "handbell/Bell.mp3";
+				button4Path = "handbell/Bell.mp3";
+				button5Path = "handbell/Bell.mp3";
+				button6Path = "handbell/Bell.mp3";
+				button7Path = "handbell/Bell.mp3";
+				button8Path = "handbell/Bell.mp3";
+				
+				button1 = bellId;
+				button2 = bellId;
+				button3 = bellId;
+				button4 = bellId;
+				button5 = bellId;
+				button6 = bellId;
+				button7 = bellId;
+				button8 = bellId;
 				break;
 				
 			case HARP_FLAG:
-				button1 = "harp/Harp.mp3";
-				button2 = "harp/Harp.mp3";
-				button3 = "harp/Harp.mp3";
-				button4 = "harp/Harp.mp3";
-				button5 = "harp/Harp.mp3";
-				button6 = "harp/Harp.mp3";
-				button7 = "harp/Harp.mp3";
-				button8 = "harp/Harp.mp3";
+				button1Path = "harp/Harp.mp3";
+				button2Path = "harp/Harp.mp3";
+				button3Path = "harp/Harp.mp3";
+				button4Path = "harp/Harp.mp3";
+				button5Path = "harp/Harp.mp3";
+				button6Path = "harp/Harp.mp3";
+				button7Path = "harp/Harp.mp3";
+				button8Path = "harp/Harp.mp3";
+				
+				button1 = harpId;
+				button2 = harpId;
+				button3 = harpId;
+				button4 = harpId;
+				button5 = harpId;
+				button6 = harpId;
+				button7 = harpId;
+				button8 = harpId;
 				break;
 		}
 	}
 	
 	public static void PlaySound(Activity activity, final int buttonNo) throws IOException {
-		
 		int flag = CheckFlags();
 		String toPlayFile = null;
+		int toPlayId = -1;
 		
 		if(flag == DRUM_FLAG) {
 			if(enableDrum && !resetDrum) {
-				toPlayFile = drum;
+				toPlayId = drum;
 				resetDrum = true;
 			}
 			else {
@@ -229,7 +333,7 @@ public abstract class InstrumentHandler {
 					break;
 			}
 			if(enableBell && !resetBell) {
-				toPlayFile = bell;				
+				toPlayId = bell;				
 				resetBell = true;
 			}
 			else {
@@ -241,67 +345,75 @@ public abstract class InstrumentHandler {
 			
 			switch(buttonNo) {
 				case 1:
-					toPlayFile = button1;
+					toPlayFile = button1Path;
+					toPlayId = button1;
 					break;
 				case 2:
-					toPlayFile = button2;
+					toPlayFile = button2Path;
+					toPlayId = button2;
 					break;
 				case 3:
-					toPlayFile = button3;
+					toPlayFile = button3Path;
+					toPlayId = button3;
 					break;
 				case 4:
-					toPlayFile = button4;
+					toPlayFile = button4Path;
+					toPlayId = button4;
 					break;
 				case 5:
-					toPlayFile = button5;
+					toPlayFile = button5Path;
+					toPlayId = button5;
 					break;
 				case 6:
-					toPlayFile = button6;
+					toPlayFile = button6Path;
+					toPlayId = button6;
 					break;
 				case 7:
-					toPlayFile = button7;
+					toPlayFile = button7Path;
+					toPlayId = button7;
 					break;
 				case 8:
-					toPlayFile = button8;
+					toPlayFile = button8Path;
+					toPlayId = button8;
 					break;
 				default:
 					return;
 			}
 			
 			if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG) {
-				ContinuousPlay cp = new ContinuousPlay(activity, toPlayFile);
+				ContinuousPlay cp = new ContinuousPlay(activity, toPlayId);
 				switch(buttonNo) {
 					case 1:
 						sound1 = cp;
-						sound1.execute();
+						sound1.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 2:
 						sound2 = cp;
-						sound2.execute();
+						sound2.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 3:
 						sound3 = cp;
-						sound3.execute();
+						sound3.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 4:
 						sound4 = cp;
-						sound4.execute();
+						sound4.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 5:
 						sound5 = cp;
-						sound5.execute();
+						sound5.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 6:
 						sound6 = cp;
-						sound6.execute();
+						sound6.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 7:
 						sound7 = cp;
-						sound7.execute();
+						sound7.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 					case 8:
 						sound8 = cp;
-						sound8.execute();
+						sound8.executeOnExecutor(ContinuousPlay.THREAD_POOL_EXECUTOR);
 						break;
 				}
 				
@@ -312,22 +424,11 @@ public abstract class InstrumentHandler {
 			return;
 		}
 		
-		if(toPlayFile != "" || !toPlayFile.equals("") || toPlayFile != null) {
-			AssetFileDescriptor data = activity.getAssets().openFd(toPlayFile);
-			MediaPlayer mediaPlayer = new MediaPlayer();
-			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.setDataSource(data.getFileDescriptor(), data.getStartOffset(), data.getLength());
-			mediaPlayer.prepare();
-	//		int duration = mediaPlayer.getDuration();
-			mediaPlayer.start();
-			
-			mediaPlayer.setOnCompletionListener(new OnCompletionListener() {
-				@Override
-				public void onCompletion(MediaPlayer mediaPlayer) {
-					mediaPlayer.release();
-					mediaPlayer = null;
-				}
-			});
+		if(toPlayId != -1){
+			AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+			final float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+			final float streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume;
+			sp.play(toPlayId, streamVolume, streamVolume, 0, 0, 1);;
 		}
 	}
 	
@@ -369,7 +470,7 @@ public abstract class InstrumentHandler {
 			}
 		}
 		else {
-			bell = "";
+//			bell = "";
 		}
 	}
 	
@@ -415,8 +516,6 @@ public abstract class InstrumentHandler {
 	}
 	
 	public static void StartRecording() throws IOException {
-		folder = new File(Environment.getExternalStorageDirectory() + "/NinjaTrack");
-		
 		if(folder.exists()) {
 			audioFile = File.createTempFile("temp_", ".3gp", folder);
 			
@@ -460,6 +559,6 @@ public abstract class InstrumentHandler {
 		Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 		Uri newUri = contentResolver.insert(base, values);
 		
-		return newUri; 
+		return newUri;
 	}
 }

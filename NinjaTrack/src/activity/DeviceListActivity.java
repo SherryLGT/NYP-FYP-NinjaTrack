@@ -14,6 +14,7 @@ import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -103,6 +104,8 @@ public class DeviceListActivity extends Activity {
 				startActivity(intent);
 			}
 		});
+		
+		DeviceListActivity.this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 	}
 
 	@Override

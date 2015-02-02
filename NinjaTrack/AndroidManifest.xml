@@ -38,6 +38,9 @@
             android:name="activity.DeviceListActivity">
         </activity>
         <activity
+            android:name="activity.PinActivity">
+        </activity>
+        <activity
             android:name="activity.MainActivity">
         </activity>
         

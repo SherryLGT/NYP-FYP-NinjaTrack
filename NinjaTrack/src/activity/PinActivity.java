@@ -1,4 +1,4 @@
-package fragment;
+package activity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,11 +12,12 @@ import redbearprotocol.IRBLProtocol;
 import redbearprotocol.RBLProtocol;
 import redbearservice.IRedBearServiceEventListener;
 import redbearservice.RedBearService;
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
@@ -28,6 +29,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -48,7 +51,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PinFragment extends Fragment implements IRBLProtocol {
+public class PinActivity extends Activity implements IRBLProtocol {
 	
 	private TextView tv_devicename, tv_rssi;
 	private LinearLayout pins_list;
@@ -71,30 +74,27 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	TimerTask mTimerTask;
 	boolean timerFlag;
 
-	public PinFragment() {}
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.pin_list);
 
-	public PinFragment(Device device, RedBearService mRedBearService) {
-		this.device = device;
+		device = DeviceListActivity.device;
+		mRedBearService = DeviceListActivity.redBearService;
 		pins = new SparseArray<Pin>();
 		changeValues = new HashMap<String, Pin>();
 		list_pins_views = new HashMap<String, View>();
-		this.mRedBearService = mRedBearService;
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		
-		View rootView = inflater.inflate(R.layout.pin_list, null);
-
-		tv_devicename = (TextView) rootView.findViewById(R.id.tv_devicename);
-		tv_rssi = (TextView) rootView.findViewById(R.id.tv_rssi);		
-		pins_list = (LinearLayout) rootView.findViewById(R.id.pins_list);
+		tv_devicename = (TextView) findViewById(R.id.tv_devicename);
+		tv_rssi = (TextView) findViewById(R.id.tv_rssi);		
+		pins_list = (LinearLayout) findViewById(R.id.pins_list);
 		pins_list.setEnabled(false);
 		
-		progress = new ProgressDialog(getActivity());
+		progress = new ProgressDialog(this);
 		progress.setMessage("Retrieving pin information");
 		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progress.setIndeterminate(true);
+		progress.setCancelable(false);
+		progress.setCanceledOnTouchOutside(false);
 		progress.show();
 		
 		if (device != null) {
@@ -110,20 +110,18 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		mTimerTask = new TimerTask() {
 			@Override
 			public void run() {
-				if (getActivity() != null) {
-					getActivity().setResult(RST_CODE);
-					getActivity().finish();
-					getActivity().runOnUiThread(new Runnable() {
+				if (this != null) {
+					PinActivity.this.setResult(RST_CODE);
+					PinActivity.this.finish();
+					PinActivity.this.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							new AlertDialog.Builder(getActivity()).setTitle("Error").setMessage("No response from the BLE Controller sketch.").setPositiveButton("OK", null).show();
+							new AlertDialog.Builder(PinActivity.this).setTitle("Error").setMessage("No response from the BLE Controller sketch.").setPositiveButton("OK", null).show();
 						}
 					});
 				}
 			}
 		};
-
-		return rootView;
 	}
 
 	@Override
@@ -176,6 +174,25 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		mHandler.removeMessages(0);
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.pin, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+			case R.id.action_next:
+				savePreferences("firsttime", "false");
+				Intent intent = new Intent(PinActivity.this, MainActivity.class);
+				intent.putExtra("frompin", true);
+        		startActivity(intent);
+        		finish();
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
 	final IRedBearServiceEventListener mIRedBearServiceEventListener = new IRedBearServiceEventListener() {
 		@Override
 		public void onDeviceFound(String deviceAddress, String name, int rssi, int bondState, byte[] scanRecord, ParcelUuid[] uuids) {
@@ -184,7 +201,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 		@Override
 		public void onDeviceRssiUpdate(final String deviceAddress, final int rssi, final int state) {
-			getActivity().runOnUiThread(new Runnable() {
+			PinActivity.this.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
 					deviceRssiStateChange(deviceAddress, rssi, state);
@@ -200,8 +217,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 		@Override
 		public void onDeviceConnectStateChange(final String deviceAddress, final int state) {
-			if (getActivity() != null) {
-				getActivity().runOnUiThread(new Runnable() {
+			if (PinActivity.this != null) {
+				PinActivity.this.runOnUiThread(new Runnable() {
 
 					@Override
 					public void run() {
@@ -242,8 +259,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 					if (mProtocol != null) {
 						mProtocol.queryProtocolVersion();
 					}
-					if (getActivity() != null) {
-						Toast.makeText(getActivity(), "Retry it!", Toast.LENGTH_SHORT).show();
+					if (PinActivity.this != null) {
+						Toast.makeText(PinActivity.this, "Retry it!", Toast.LENGTH_SHORT).show();
 						mHandler.sendEmptyMessageDelayed(2, timeout);
 					}
 				}
@@ -252,8 +269,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 					if (mProtocol != null) {
 						mProtocol.queryProtocolVersion();
 					}
-					if (getActivity() != null) {
-						Toast.makeText(getActivity(), "Retry it again!", Toast.LENGTH_SHORT).show();
+					if (PinActivity.this != null) {
+						Toast.makeText(PinActivity.this, "Retry it again!", Toast.LENGTH_SHORT).show();
 					}
 					mTimer.schedule(mTimerTask, timeout);
 					timerFlag = true;
@@ -277,7 +294,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 	protected void deviceConnectStateChange(String deviceAddress, int state) {
 		if (state == BluetoothProfile.STATE_CONNECTED) {
-			Toast.makeText(getActivity(), "Connected", Toast.LENGTH_SHORT).show();
+			Toast.makeText(PinActivity.this, "Connected", Toast.LENGTH_SHORT).show();
 
 			if (tv_rssi != null) {
 				tv_rssi.postDelayed(new Runnable() {
@@ -314,8 +331,8 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		String temp = new String(chars);
 		Log.e(TAG, "temp : " + temp);
 		if (temp.contains("ABC")) {
-			if (getActivity() != null) {
-				getActivity().runOnUiThread(new Runnable() {
+			if (PinActivity.this != null) {
+				PinActivity.this.runOnUiThread(new Runnable() {
 					// removed loading and let the listview working
 					@Override
 					public void run() {
@@ -434,6 +451,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 		Pin pinInfo = pins.get(pin);
 		pinInfo.setMode(mode);
+
 		refreshList(pinInfo);
 	}
 
@@ -482,10 +500,10 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 				public void run() {
 
 					if (mAdapter == null) {
-						if (getActivity() == null) {
+						if (PinActivity.this == null) {
 							return;
 						}
-						mAdapter = new PinAdapter(getActivity(), pins);
+						mAdapter = new PinAdapter(PinActivity.this, pins);
 					}
 					if (list_pins_views != null) {
 						View view = list_pins_views.get(pin.getPin() + "");
@@ -541,7 +559,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 		public View getView(int position, View contentView, ViewGroup arg2) {
 
 			Pin pinInfo = data.get(position);
-			
+
 			ViewHolder holder = null;
 			if (contentView == null) {
 				contentView = mInflater.inflate(R.layout.pin_list_item, null);
@@ -694,11 +712,11 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	RelativeLayout select_window;
 
 	protected void showModeSelect(Pin pinInfo) {
-		if (getActivity() != null) {
+		if (PinActivity.this != null) {
 			LinearLayout modes_area = null;
 			final int modes_area_id = 0x123ff;
 			if (select_window == null) {
-				select_window = new RelativeLayout(getActivity());
+				select_window = new RelativeLayout(PinActivity.this);
 				select_window.setBackgroundColor(0x4f000000);
 				select_window.setOnClickListener(new OnClickListener() {
 
@@ -708,7 +726,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 					}
 				});
 
-				modes_area = new LinearLayout(getActivity());
+				modes_area = new LinearLayout(PinActivity.this);
 				modes_area.setId(modes_area_id);
 				modes_area.setBackgroundColor(Color.WHITE);
 				modes_area.setOrientation(LinearLayout.VERTICAL);
@@ -717,7 +735,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 				params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
 				select_window.addView(modes_area, params);
 
-				getActivity().addContentView(select_window, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+				PinActivity.this.addContentView(select_window, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 			} else {
 				modes_area = (LinearLayout) select_window.findViewById(modes_area_id);
 			}
@@ -768,7 +786,7 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 
 	protected Button createModeButton(String text) {
 
-		Button btn = new Button(getActivity());
+		Button btn = new Button(PinActivity.this);
 
 		btn.setPadding(20, 5, 20, 5);
 
@@ -794,9 +812,16 @@ public class PinFragment extends Fragment implements IRBLProtocol {
 	}
 	
 	protected void savePreferences(int key, int value) {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(PinActivity.this);
 		Editor editor = sp.edit();
 		editor.putInt(Integer.toString(key), value);
+		editor.commit();
+	}
+	
+	protected void savePreferences(String key, String value) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(PinActivity.this);
+		Editor editor = sp.edit();
+		editor.putString(key, value);
 		editor.commit();
 	}
 }

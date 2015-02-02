@@ -14,12 +14,14 @@ import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelUuid;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.View;
@@ -39,7 +41,8 @@ public class DeviceListActivity extends Activity {
 	private String DEVICE_ADDRESS = "address";
 	public static Device device;
 	private boolean close = false;
-
+	private SharedPreferences sp;
+	
     private final long SCAN_PERIOD = 3000; // 3 seconds
 	
     private ProgressDialog progress;
@@ -65,7 +68,8 @@ public class DeviceListActivity extends Activity {
 		progress = new ProgressDialog(this);
 		progress.setMessage("Retrieving device");
 		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progress.setIndeterminate(true);
+		progress.setCancelable(false);
+		progress.setCanceledOnTouchOutside(false);
 		progress.show();
 		
 		swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
@@ -94,14 +98,22 @@ public class DeviceListActivity extends Activity {
 	            android.R.color.holo_red_light
 	    );
 		
+		sp = PreferenceManager.getDefaultSharedPreferences(this);
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				device = deviceList.get(position);
 				redBearService.connectDevice(device.getAddress(), false);
-				
-				Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
-				startActivity(intent);
+				if(sp.getString("firsttime", "true").equals("true")) {
+					Intent intent = new Intent(DeviceListActivity.this, PinActivity.class);
+					intent.putExtra("frompin", false);
+					startActivity(intent);
+				}
+				else {
+					Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
+					intent.putExtra("frompin", false);
+					startActivity(intent);
+				}
 			}
 		});
 		

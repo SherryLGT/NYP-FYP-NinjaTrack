@@ -145,9 +145,15 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		timerFlag = false;
 		progress = new ProgressDialog(MainActivity.this);
-		progress.setMessage("Retrieving pin information");
+		if(getIntent().getBooleanExtra("frompin", true)) {
+			progress.setMessage("Setting pin information");
+		}
+		else {
+			progress.setMessage("Retrieving pin information");
+		}
 		progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progress.setIndeterminate(true);
+		progress.setCancelable(false);
+		progress.setCanceledOnTouchOutside(false);
 		progress.show();
 		
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -546,7 +552,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			changeValues.put(pin + "", pinInfo);
 		} else {
 			pinInfo = pins.get(pin);
-			pinInfo.setMode(mode);
+			pinInfo.setMode(_mode);
 			if ((_mode == INPUT) || (_mode == OUTPUT))
 				pinInfo.setValue(value);
 			else if (_mode == ANALOG)

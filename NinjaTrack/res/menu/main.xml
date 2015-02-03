@@ -1,31 +1,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.ninjatrack.MainActivity" >
-
+    
     <item
-        android:id="@+id/action_more"
+        android:id="@+id/action_about"
         android:showAsAction="always"
-        android:title="@string/action_more"
-        android:icon="@drawable/icon_more" >
-        
-        <menu>
-		    <item
-		        android:id="@+id/action_about"
-		        android:showAsAction="always"
-		        android:title="@string/action_about"
-		        android:icon="@drawable/icon_about" />
-		    <item
-		        android:id="@+id/action_start_record"
-		        android:showAsAction="always"
-		        android:title="@string/action_start_record"
-		        android:icon="@drawable/icon_mic" />
-		    <item
-		        android:id="@+id/action_stop_record"
-		        android:showAsAction="always"
-		        android:title="@string/action_stop_record"
-		        android:icon="@drawable/icon_stop"
-		        android:visible="false" />
-        </menu>
-    </item>
-
+        android:title="@string/action_about"
+        android:icon="@drawable/icon_about" />
+    <item
+        android:id="@+id/action_start_record"
+        android:showAsAction="always"
+        android:title="@string/action_start_record"
+        android:icon="@drawable/icon_mic" />
+    <item
+        android:id="@+id/action_stop_record"
+        android:showAsAction="always"
+        android:title="@string/action_stop_record"
+        android:icon="@drawable/icon_stop"
+        android:visible="false" />
 </menu>

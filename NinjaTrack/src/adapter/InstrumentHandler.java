@@ -5,7 +5,16 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import nyp.fypj.ninjatrack.R;
+
+import fragment.DrumFragment;
+import fragment.HandBellFragment;
+import fragment.HarpFragment;
+import fragment.RecorderFragment;
+import fragment.SaxophoneFragment;
+
 import model.Pin;
+import model.Song;
 import redbearprotocol.RBLProtocol;
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -17,9 +26,14 @@ import android.media.MediaRecorder;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.util.SparseArray;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import async.ContinuousPlay;
 
 public abstract class InstrumentHandler {
@@ -108,7 +122,7 @@ public abstract class InstrumentHandler {
 		sp.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 			@Override
 			public void onLoadComplete(SoundPool sp, int id, int status) {
-				System.out.println("SoundPool loaded:" + id);
+				System.out.println("SoundPool loaded: " + id);
 			}
 		});
 		try {
@@ -172,6 +186,8 @@ public abstract class InstrumentHandler {
 				if(IsMoving()) { // Bell
 					if(accx >= 460) {
 						enableBell = true;
+						
+//						ManipulateUI(activity, flag, bell, true);
 					}
 					else {
 						enableBell = false;
@@ -182,6 +198,8 @@ public abstract class InstrumentHandler {
 				}
 				else { // Harp
 					flag = HARP_FLAG;
+					
+//					ManipulateUI(activity, flag, bell, false);
 				}
 			}
 		}
@@ -305,6 +323,7 @@ public abstract class InstrumentHandler {
 				return;
 			}
 		}
+		
 		else if(flag == BELL_FLAG) {			
 			switch(buttonNo) {
 				case 1:
@@ -340,6 +359,7 @@ public abstract class InstrumentHandler {
 				return;
 			}
 		}
+		
 		else if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG || flag == HARP_FLAG) {
 			enableBell = false;
 			
@@ -417,6 +437,7 @@ public abstract class InstrumentHandler {
 						break;
 				}
 				
+				ManipulateUI(activity, flag, toPlayFile, true);
 				return;
 			}
 		}
@@ -428,7 +449,7 @@ public abstract class InstrumentHandler {
 			AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
 			final float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
 			final float streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume;
-			sp.play(toPlayId, streamVolume, streamVolume, 0, 0, 1);;
+			sp.play(toPlayId, streamVolume, streamVolume, 0, 0, 1);
 		}
 	}
 	
@@ -438,34 +459,42 @@ public abstract class InstrumentHandler {
 				case 1:
 					sound1.playOn = false;
 					sound1.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button1Path, false);
 					break;
 				case 2:
 					sound2.playOn = false;
 					sound2.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button2Path, false);
 					break;
 				case 3:
 					sound3.playOn = false;
 					sound3.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button3Path, false);
 					break;
 				case 4:
 					sound4.playOn = false;
 					sound4.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button4Path, false);
 					break;
 				case 5:
 					sound5.playOn = false;
 					sound5.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button5Path, false);
 					break;
 				case 6:
 					sound6.playOn = false;
 					sound6.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button6Path, false);
 					break;
 				case 7:
 					sound7.playOn = false;
 					sound7.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button7Path, false);
 					break;
 				case 8:
 					sound8.playOn = false;
 					sound8.cancel(true);
+					ManipulateUI(activity, CheckFlags(), button8Path, false);
 					break;
 			}
 		}
@@ -560,5 +589,38 @@ public abstract class InstrumentHandler {
 		Uri newUri = contentResolver.insert(base, values);
 		
 		return newUri;
+	}
+	
+	public static void ManipulateUI(Activity activity, int flag, String toPlayFile, boolean isPlaying) {
+		String[] temp1 = toPlayFile.split("/");
+		String title = temp1[1];
+
+		Message msg = new Message();
+		Bundle data = new Bundle();
+		data.putString("title", title);
+		data.putBoolean("isPlaying", isPlaying);
+		msg.setData(data);
+		
+		switch(flag) {
+			case RECORDER_FLAG :
+				RecorderFragment.handler.sendMessage(msg);
+				break;
+				
+			case SAXOPHONE_FLAG :
+				SaxophoneFragment.handler.sendMessage(msg);
+				break;
+				
+			case DRUM_FLAG :
+				DrumFragment.handler.sendMessage(msg);
+				break;
+				
+			case BELL_FLAG :
+				HandBellFragment.handler.sendMessage(msg);
+				break;
+				
+			case HARP_FLAG :
+				HarpFragment.handler.sendMessage(msg);
+				break;
+		}
 	}
 }

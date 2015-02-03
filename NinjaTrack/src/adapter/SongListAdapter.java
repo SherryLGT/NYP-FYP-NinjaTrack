@@ -6,39 +6,32 @@ import java.util.concurrent.TimeUnit;
 import model.Song;
 import nyp.fypj.ninjatrack.R;
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.view.LayoutInflater;
+import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 @SuppressLint({ "ViewHolder", "InflateParams" })
-public class SongListAdapter extends BaseAdapter {
+public class SongListAdapter extends ArrayAdapter<Song> {
 	
-	private Context context;
+	private Activity context;
 	private ArrayList<Song> songs;
-	private LayoutInflater inflater;
 	
 	private TextView tv_title, tv_duration;
 	private ImageView btn_pp;
 	
-	public SongListAdapter(Context context, ArrayList<Song> songs) {
+	public SongListAdapter(Activity context, ArrayList<Song> songs) {
+		super(context, R.layout.song_list_item, songs);
 		this.context = context;
 		this.songs = songs;
-		inflater = LayoutInflater.from(context);
 	}
 
 	@Override
 	public int getCount() {
 		return songs.size();
-	}
-
-	@Override
-	public Object getItem(int position) {
-		return null;
 	}
 
 	@Override
@@ -49,13 +42,19 @@ public class SongListAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		
-        RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.song_list_item, null);
+		RelativeLayout layout = (RelativeLayout)context.getLayoutInflater().inflate(R.layout.song_list_item, null);
         tv_title = (TextView) layout.findViewById(R.id.tv_title);
         tv_duration = (TextView) layout.findViewById(R.id.tv_duration);
         btn_pp = (ImageView) layout.findViewById(R.id.btn_pp);
         
         Song currentSong = songs.get(position);
         tv_title.setText(currentSong.getTitle());
+        if(currentSong.isPlaying()) {
+        	btn_pp.setImageDrawable(layout.getResources().getDrawable(R.drawable.btn_pause));
+        }
+        else {
+        	btn_pp.setImageDrawable(layout.getResources().getDrawable(R.drawable.btn_play));
+        }
         
         long millis = currentSong.getDuration();
         int min = (int) TimeUnit.MILLISECONDS.toMinutes(millis) % 60;

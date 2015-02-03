@@ -50,7 +50,7 @@ public class SQLiteController {
 		}
 	}
 	
-	public void createProfile(Profile profile) {
+	public void CreateProfile(Profile profile) {
 		ContentValues cv = new ContentValues();
 		cv.put("name", profile.getName());
 		cv.put("age", Utility.parseDateToString(profile.getAge(), Utility.FORMAT_DD_MMM_YYYY));
@@ -62,7 +62,7 @@ public class SQLiteController {
 		database.insert("Profile", null, cv);
 	}
 	
-	public Profile retrieveProfile() {
+	public Profile RetrieveProfile() {
 		Profile profile = new Profile();
 		
 		Cursor cursor = database.query("Profile", new String[] {"id", "name", "age", "contact_no", "email", "start_date", "image"}, null, null, null, null, null, null);
@@ -81,7 +81,7 @@ public class SQLiteController {
 		return profile;
 	}
 	
-	public void updateProfile(Profile profile) {
+	public void UpdateProfile(Profile profile) {
 		ContentValues cv = new ContentValues();
 		cv.put("name", profile.getName());
 		cv.put("age", Utility.parseDateToString(profile.getAge(), Utility.FORMAT_DD_MMM_YYYY));

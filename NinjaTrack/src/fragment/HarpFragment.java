@@ -4,44 +4,39 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 
 import model.Song;
 import nyp.fypj.ninjatrack.R;
-
 import adapter.SongListAdapter;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class HarpFragment extends Fragment {
 	
 	private ProgressBar progress_bar;
 	private TextView start_time, end_time;
-	private ListView lv_song;
+	private static ListView lv_song;
 	
-	private ArrayList<Song> songList;
-	private SongListAdapter adapter;
-	private HashMap<String, MediaPlayer> mediaList;
+	private static ArrayList<Song> songList;
+	private static SongListAdapter adapter;
 	
-	public HarpFragment() {}
+	public HarpFragment(){}
 	
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		 
+ 
         View rootView = inflater.inflate(R.layout.fragment_instrument, container, false);
         progress_bar = (ProgressBar) rootView.findViewById(R.id.progress_bar);
         start_time = (TextView) rootView.findViewById(R.id.start_time);
@@ -57,80 +52,8 @@ public class HarpFragment extends Fragment {
 			}
         });
 
-        mediaList = new HashMap<String, MediaPlayer>();
-        adapter = new SongListAdapter(getActivity().getApplicationContext(), songList);
+        adapter = new SongListAdapter(getActivity(), songList);
         lv_song.setAdapter(adapter);
-        
-        lv_song.setOnItemClickListener(new OnItemClickListener(){
-			@Override
-			public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-				final ImageView btn_pp = (ImageView) view.findViewById(R.id.btn_pp);
-				final Song selectedSong = songList.get(position);
-				
-				// Check selected
-				if(mediaList.keySet().contains(selectedSong.getTitle())){
-					MediaPlayer mediaPlayer = mediaList.get(selectedSong.getTitle());
-					
-					// Pause playing
-					if(mediaPlayer.isPlaying()) {
-						mediaPlayer.pause();
-//						mediaPlayer.stop();
-//						mediaList.remove(selectedSong.getTitle());
-						
-						btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_play));
-					}
-					// Resume playing
-					else {
-						mediaPlayer.start();
-						
-						btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_pause));
-					}
-				}
-				// Play new song
-				else{
-					MediaPlayer mediaPlayer = new MediaPlayer();
-					try {
-						mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-						mediaPlayer.setDataSource(selectedSong.getData().getFileDescriptor(), selectedSong.getData().getStartOffset(), selectedSong.getData().getLength());
-//						mediaPlayer.setDataSource(selectedSong.getData());
-						mediaPlayer.setOnCompletionListener(new OnCompletionListener() {
-							@Override
-							public void onCompletion(MediaPlayer mediaPlayer) {
-								mediaPlayer.reset();
-								try {
-									mediaPlayer.setDataSource(selectedSong.getData().getFileDescriptor(), selectedSong.getData().getStartOffset(), selectedSong.getData().getLength());
-									mediaPlayer.prepare();
-									mediaPlayer.start();
-								} catch (IllegalArgumentException e) {
-									e.printStackTrace();
-								} catch (IllegalStateException e) {
-									e.printStackTrace();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-//								mediaPlayer.stop();
-//								mediaList.remove(selectedSong.getTitle());
-//								
-//								btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_play));
-							}
-						});
-						mediaPlayer.prepare();
-						mediaPlayer.start();
-						mediaList.put(selectedSong.getTitle(), mediaPlayer);
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalStateException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					
-					btn_pp.setImageDrawable(getResources().getDrawable(R.drawable.btn_pause));
-				}
-			}
-        });
         
         progress_bar.setProgress(20);
         start_time.setText("0:00");
@@ -154,30 +77,36 @@ public class HarpFragment extends Fragment {
 				mediaPlayer.setDataSource(data.getFileDescriptor(), data.getStartOffset(), data.getLength());
 				mediaPlayer.prepare();
 				int duration = mediaPlayer.getDuration();
-				songList.add(new Song(title, duration, data));
+				songList.add(new Song(title, duration, data, false));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		// Retrieve all song files
-//		ContentResolver musicResolver = getActivity().getContentResolver();
-//		Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-//		Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-//		
-//		if(musicCursor != null && musicCursor.moveToFirst()) {
-//			int idColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
-//			int titleColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.TITLE);
-//			int durationColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DURATION);
-//			int dataColumn = musicCursor.getColumnIndex(android.provider.MediaStore.Audio.Media.DATA);
-//			
-//			do {
-//				int id = musicCursor.getInt(idColumn);
-//				String title = musicCursor.getString(titleColumn);
-//				int duration = Integer.parseInt(musicCursor.getString(durationColumn));
-//				String data = musicCursor.getString(dataColumn);
-//				songList.add(new Song(id, title, duration, data));
-//			} while(musicCursor.moveToNext());
-//		}
+	}
+	
+	public static Handler handler = new Handler(){
+		public void handleMessage(Message msg){
+			String title = msg.getData().getString("title");
+			boolean isPlaying = msg.getData().getBoolean("isPlaying");
+			ManipulateUI(title, isPlaying);
+		}
+	};
+	
+	private static void ManipulateUI(String title, boolean isPlaying){
+		for(Song song : HarpFragment.songList) {
+			if(title.equals(song.getTitle())) {
+				View view = HarpFragment.adapter.getView(HarpFragment.adapter.getPosition(song), null, HarpFragment.lv_song);
+				TextView tv_title = (TextView) view.findViewById(R.id.tv_title);
+				if(tv_title.getText() == song.getTitle()){
+					if(isPlaying){
+						song.setPlaying(true);
+					}
+					else{
+						song.setPlaying(false);
+					}
+				}
+			}
+		}
+		adapter.notifyDataSetChanged();
 	}
 }

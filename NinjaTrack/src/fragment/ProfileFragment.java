@@ -72,7 +72,11 @@ public class ProfileFragment extends Fragment {
         
         controller = new SQLiteController(getActivity());
         controller.open();
-        profile = controller.retrieveProfile();
+        profile = controller.RetrieveProfile();
+        if(profile == null) {
+    		profile = new Profile("Winnie", Utility.parseDateFromString("6/10/1997", Utility.FORMAT_DD_MMM_YYYY), 65501675, "winnie@outlook.com", Utility.parseDateFromString("12/11/2014", Utility.FORMAT_DD_MMM_YYYY), "");
+    		controller.CreateProfile(profile);
+        }
         controller.close();
         
         defaultView(profile);
@@ -119,7 +123,7 @@ public class ProfileFragment extends Fragment {
 				profile.setImage(imagePath);
 				
 		        controller.open();
-		        controller.updateProfile(profile);
+		        controller.UpdateProfile(profile);
 		        controller.close();
 		        
 				defaultView(profile);

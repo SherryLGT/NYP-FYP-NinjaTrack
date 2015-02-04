@@ -93,11 +93,13 @@ public class HarpFragment extends Fragment {
 	};
 	
 	private static void ManipulateUI(String title, boolean isPlaying){
+		int position = 0;
 		for(Song song : HarpFragment.songList) {
 			if(title.equals(song.getTitle())) {
 				View view = HarpFragment.adapter.getView(HarpFragment.adapter.getPosition(song), null, HarpFragment.lv_song);
 				TextView tv_title = (TextView) view.findViewById(R.id.tv_title);
 				if(tv_title.getText() == song.getTitle()){
+					lv_song.smoothScrollToPosition(position);
 					if(isPlaying){
 						song.setPlaying(true);
 					}
@@ -106,6 +108,7 @@ public class HarpFragment extends Fragment {
 					}
 				}
 			}
+			position++;
 		}
 		adapter.notifyDataSetChanged();
 	}

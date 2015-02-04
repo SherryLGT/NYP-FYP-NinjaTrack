@@ -600,11 +600,11 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		
 		try {
-			InstrumentHandler.SetSound();
+			InstrumentHandler.SetSound(this);
 			
 			// Changing of tabs to respective instrument
 			if(InstrumentHandler.curr_flag != InstrumentHandler.prev_flag) {
-				switch(InstrumentHandler.CheckFlags()) {
+				switch(InstrumentHandler.CheckFlags(this)) {
 					case InstrumentHandler.RECORDER_FLAG:
 						MainActivity.position = 0;
 						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
@@ -617,14 +617,14 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						MainActivity.position = 1;
 						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
 						break;
-					case InstrumentHandler.BELL_FLAG:
-						MainActivity.position = 3;
-						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
-						break;
-					case InstrumentHandler.HARP_FLAG:
-						MainActivity.position = 4;
-						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
-						break;
+//					case InstrumentHandler.BELL_FLAG:
+//						MainActivity.position = 3;
+//						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+//						break;
+//					case InstrumentHandler.HARP_FLAG:
+//						MainActivity.position = 4;
+//						getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+//						break;
 				}
 			}
 			
@@ -658,7 +658,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 								break;
 						}
 					}
-					else if(pinInfo.getValue() == 0 && (InstrumentHandler.CheckFlags() == InstrumentHandler.RECORDER_FLAG || InstrumentHandler.CheckFlags() == InstrumentHandler.SAXOPHONE_FLAG)) {
+					else if(pinInfo.getValue() == 0 && (InstrumentHandler.CheckFlags(this) == InstrumentHandler.RECORDER_FLAG || InstrumentHandler.CheckFlags(this) == InstrumentHandler.SAXOPHONE_FLAG)) {
 						switch(pinInfo.getPin()) { // Check for which button
 							case 2:
 								InstrumentHandler.StopSound(MainActivity.this, 1);
@@ -686,12 +686,9 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 								break;
 						}
 					}
-					else if(pinInfo.getValue() == 0 && InstrumentHandler.CheckFlags() == InstrumentHandler.BELL_FLAG) {
+					else if(pinInfo.getValue() == 0 && InstrumentHandler.CheckFlags(this) == InstrumentHandler.BELL_FLAG) {
 						InstrumentHandler.StopSound(MainActivity.this, -1);
 					}
-				}
-				else {
-					InstrumentHandler.PlaySound(MainActivity.this, -1);
 				}
 			}
 		} catch (IOException e) {
@@ -741,5 +738,22 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 	};
 	
+	public Handler h = new Handler();
+	
 	Handler handler = new Handler(handlerCallback);
+	
+	public Handler handleTabs = new Handler(new Handler.Callback() {
+		@Override
+		public boolean handleMessage(Message msg) {
+			if(msg.getData().getInt("FLAG") == InstrumentHandler.BELL_FLAG) {
+				MainActivity.position = 3;
+				getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+			}
+			else{
+				MainActivity.position = 4;
+				getSupportFragmentManager().beginTransaction().replace(R.id.content, PageSlidingTabStripFragment.newInstance()).commit();
+			}
+			return true;
+		}
+	});
 }

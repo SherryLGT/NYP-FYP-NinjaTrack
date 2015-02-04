@@ -94,12 +94,14 @@ public class DrumFragment extends Fragment {
 	};
 	
 	private static void ManipulateUI(String title, boolean isPlaying){
+		int position = 0;
 		for(Song song : songList) {
 			if(title.equals(song.getTitle())) {
 				View view = adapter.getView(adapter.getPosition(song), null, lv_song);
 				TextView tv_title = (TextView) view.findViewById(R.id.tv_title);
 				ImageView btn_pp = (ImageView) view.findViewById(R.id.btn_pp);
 				if(tv_title.getText() == song.getTitle()){
+					lv_song.smoothScrollToPosition(position);
 					if(isPlaying){
 						song.setPlaying(true);
 						btn_pp.setImageDrawable(view.getResources().getDrawable(R.drawable.btn_pause));
@@ -110,6 +112,7 @@ public class DrumFragment extends Fragment {
 					}
 				}
 			}
+			position++;
 		}
 		adapter.notifyDataSetChanged();
 	}

@@ -5,17 +5,9 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import nyp.fypj.ninjatrack.R;
-
-import fragment.DrumFragment;
-import fragment.HandBellFragment;
-import fragment.HarpFragment;
-import fragment.RecorderFragment;
-import fragment.SaxophoneFragment;
-
 import model.Pin;
-import model.Song;
 import redbearprotocol.RBLProtocol;
+import activity.MainActivity;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -28,13 +20,16 @@ import android.media.SoundPool.OnLoadCompleteListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.SparseArray;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import async.ContinuousPlay;
+import fragment.DrumFragment;
+import fragment.HandBellFragment;
+import fragment.HarpFragment;
+import fragment.RecorderFragment;
+import fragment.SaxophoneFragment;
 
 public abstract class InstrumentHandler {
 	
@@ -82,7 +77,8 @@ public abstract class InstrumentHandler {
 	public static String button7Path;
 	public static String button8Path;
 	public static String drumPath;
-	public static String bellPath;
+	public static String bellPath; 
+	public static String harpPath;
 	
 	public static int button1;
 	public static int button2;
@@ -100,6 +96,9 @@ public abstract class InstrumentHandler {
 	public static boolean enableBell = true; // Within boundary
 	public static boolean resetBell = true; // Played before or not
 	public static boolean readAccx = false;
+	public static boolean bellOrHarp = true;
+	public static boolean bellInitiated = false;
+	public static boolean harpInitiated = false;
 	
 	public static ContinuousPlay sound1;
 	public static ContinuousPlay sound2;
@@ -158,7 +157,7 @@ public abstract class InstrumentHandler {
 		}
 	}
 	
-	public static int CheckFlags() {
+	public static int CheckFlags(MainActivity activity) {
 		int flag = -1;
 		
 		if(switch1_flag == 0 && switch2_flag == 0) {
@@ -186,8 +185,6 @@ public abstract class InstrumentHandler {
 				if(IsMoving()) { // Bell
 					if(accx >= 460) {
 						enableBell = true;
-						
-//						ManipulateUI(activity, flag, bell, true);
 					}
 					else {
 						enableBell = false;
@@ -198,8 +195,6 @@ public abstract class InstrumentHandler {
 				}
 				else { // Harp
 					flag = HARP_FLAG;
-					
-//					ManipulateUI(activity, flag, bell, false);
 				}
 			}
 		}
@@ -214,11 +209,67 @@ public abstract class InstrumentHandler {
 			curr_flag = flag;
 		}
 		
+		if(flag == BELL_FLAG && bellPath != null && bellOrHarp) {
+			bellOrHarp = false;
+			Message msg = new Message();
+			Bundle bundle = new Bundle();
+			bundle.putInt("FLAG", BELL_FLAG);
+			msg.setData(bundle);
+			activity.handleTabs.sendMessage(msg);
+			if(!bellInitiated){
+				bellInitiated = true;
+				Runnable runnable = new Runnable(){
+					@Override
+					public void run() {
+						ManipulateUI(BELL_FLAG, bellPath, true);
+					}
+				};
+				activity.h.postDelayed(runnable, 1000);
+			}
+			else{
+				ManipulateUI(BELL_FLAG, bellPath, true);
+			}
+		}
+		if(flag != BELL_FLAG && bellPath != null) {
+			bellOrHarp = true;
+			ManipulateUI(BELL_FLAG, bellPath, false);
+			bellPath = null;
+		}
+		if(flag != BELL_FLAG) {
+			bell = -1;
+		}
+		if(flag == HARP_FLAG && harpPath != null && bellOrHarp) {
+			bellOrHarp = false;
+			Message msg = new Message();
+			Bundle bundle = new Bundle();
+			bundle.putInt("FLAG", HARP_FLAG);
+			msg.setData(bundle);
+			activity.handleTabs.sendMessage(msg);
+			if(!harpInitiated){
+				harpInitiated  = true;
+				Runnable runnable = new Runnable(){
+					@Override
+					public void run() {
+						ManipulateUI(HARP_FLAG, harpPath, true);
+					}
+				};
+				activity.h.postDelayed(runnable, 1000);
+			}
+			else{
+				ManipulateUI(HARP_FLAG, harpPath, true);
+			}
+		}
+		if(flag != HARP_FLAG && harpPath != null){
+			bellOrHarp = true;
+			ManipulateUI(HARP_FLAG, harpPath, false);
+			harpPath = null;
+		}
+		
 		return flag;
 	}
 	
-	public static void SetSound() throws IOException {
-		int flag = CheckFlags();
+	public static void SetSound(MainActivity activity) throws IOException {
+		int flag = CheckFlags(activity);
 		
 		switch(flag) {
 			case RECORDER_FLAG:
@@ -309,8 +360,8 @@ public abstract class InstrumentHandler {
 		}
 	}
 	
-	public static void PlaySound(Activity activity, final int buttonNo) throws IOException {
-		int flag = CheckFlags();
+	public static void PlaySound(MainActivity activity, final int buttonNo) throws IOException {
+		int flag = CheckFlags(activity);
 		String toPlayFile = null;
 		int toPlayId = -1;
 		
@@ -318,8 +369,11 @@ public abstract class InstrumentHandler {
 			if(enableDrum && !resetDrum) {
 				toPlayId = drum;
 				resetDrum = true;
+				
+				ManipulateUI(flag, drumPath, true);
 			}
 			else {
+				ManipulateUI(flag, drumPath, false);
 				return;
 			}
 		}
@@ -327,32 +381,43 @@ public abstract class InstrumentHandler {
 		else if(flag == BELL_FLAG) {			
 			switch(buttonNo) {
 				case 1:
+					toPlayFile = button1Path;
 					bell = button1;
 					break;
 				case 2:
+					toPlayFile = button2Path;
 					bell = button2;
 					break;
 				case 3:
+					toPlayFile = button3Path;
 					bell = button3;
 					break;
 				case 4:
+					toPlayFile = button4Path;
 					bell = button4;
 					break;
 				case 5:
+					toPlayFile = button5Path;
 					bell = button5;
 					break;
 				case 6:
+					toPlayFile = button6Path;
 					bell = button6;
 					break;
 				case 7:
+					toPlayFile = button7Path;
 					bell = button7;
 					break;
 				case 8:
+					toPlayFile = button8Path;
 					bell = button8;
 					break;
 			}
-			if(enableBell && !resetBell) {
-				toPlayId = bell;				
+			if(toPlayFile != null){
+				bellPath = toPlayFile;
+			}
+			if(enableBell && !resetBell && bell != -1) {
+				toPlayId = bell;
 				resetBell = true;
 			}
 			else {
@@ -400,6 +465,10 @@ public abstract class InstrumentHandler {
 					return;
 			}
 			
+			if(flag == HARP_FLAG) {
+				harpPath = toPlayFile;
+			}
+			
 			if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG) {
 				ContinuousPlay cp = new ContinuousPlay(activity, toPlayId);
 				switch(buttonNo) {
@@ -437,7 +506,7 @@ public abstract class InstrumentHandler {
 						break;
 				}
 				
-				ManipulateUI(activity, flag, toPlayFile, true);
+				ManipulateUI(flag, toPlayFile, true);
 				return;
 			}
 		}
@@ -453,53 +522,52 @@ public abstract class InstrumentHandler {
 		}
 	}
 	
-	public static void StopSound(Activity activity, final int buttonNo) throws IOException {
+	public static void StopSound(MainActivity activity, final int buttonNo) throws IOException {
 		if(buttonNo != -1) {
 			switch(buttonNo) {
 				case 1:
 					sound1.playOn = false;
 					sound1.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button1Path, false);
+					ManipulateUI(CheckFlags(activity), button1Path, false);
 					break;
 				case 2:
 					sound2.playOn = false;
 					sound2.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button2Path, false);
+					ManipulateUI(CheckFlags(activity), button2Path, false);
 					break;
 				case 3:
 					sound3.playOn = false;
 					sound3.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button3Path, false);
+					ManipulateUI(CheckFlags(activity), button3Path, false);
 					break;
 				case 4:
 					sound4.playOn = false;
 					sound4.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button4Path, false);
+					ManipulateUI(CheckFlags(activity), button4Path, false);
 					break;
 				case 5:
 					sound5.playOn = false;
 					sound5.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button5Path, false);
+					ManipulateUI(CheckFlags(activity), button5Path, false);
 					break;
 				case 6:
 					sound6.playOn = false;
 					sound6.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button6Path, false);
+					ManipulateUI(CheckFlags(activity), button6Path, false);
 					break;
 				case 7:
 					sound7.playOn = false;
 					sound7.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button7Path, false);
+					ManipulateUI(CheckFlags(activity), button7Path, false);
 					break;
 				case 8:
 					sound8.playOn = false;
 					sound8.cancel(true);
-					ManipulateUI(activity, CheckFlags(), button8Path, false);
+					ManipulateUI(CheckFlags(activity), button8Path, false);
 					break;
 			}
 		}
 		else {
-//			bell = "";
 		}
 	}
 	
@@ -591,7 +659,7 @@ public abstract class InstrumentHandler {
 		return newUri;
 	}
 	
-	public static void ManipulateUI(Activity activity, int flag, String toPlayFile, boolean isPlaying) {
+	public static void ManipulateUI(int flag, String toPlayFile, boolean isPlaying) {
 		String[] temp1 = toPlayFile.split("/");
 		String title = temp1[1];
 

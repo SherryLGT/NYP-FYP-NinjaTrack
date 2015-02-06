@@ -21,14 +21,16 @@
         android:layout_marginTop="15dp"
         android:layout_marginBottom="10dp"
         android:layout_below="@+id/equaliser"
-        android:progressDrawable="@drawable/progress_bar" />
+        android:progressDrawable="@drawable/progress_bar"
+        android:visibility="gone" />
      
      <TextView
          android:id="@+id/start_time"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_marginLeft="18dp"
-         android:layout_below="@+id/progress_bar" />
+         android:layout_below="@+id/progress_bar"
+        android:visibility="gone" />
      
      <TextView
          android:id="@+id/end_time"
@@ -36,7 +38,8 @@
          android:layout_height="wrap_content"
          android:layout_alignParentRight="true"
          android:layout_marginRight="18dp"
-         android:layout_below="@+id/progress_bar" />     
+         android:layout_below="@+id/progress_bar"
+        android:visibility="gone" />     
 
     <ListView
         android:id="@+id/lv_song"

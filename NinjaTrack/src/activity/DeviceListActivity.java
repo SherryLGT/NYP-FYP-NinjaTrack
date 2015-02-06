@@ -10,11 +10,14 @@ import nyp.fypj.ninjatrack.R;
 import redbearservice.IRedBearServiceEventListener;
 import redbearservice.RedBearService;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -103,16 +106,36 @@ public class DeviceListActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				device = deviceList.get(position);
-				redBearService.connectDevice(device.getAddress(), false);
-				if(sp.getString("firsttime", "true").equals("true")) {
-					Intent intent = new Intent(DeviceListActivity.this, PinActivity.class);
-					intent.putExtra("frompin", false);
-					startActivity(intent);
+				if(device.getName().equals("BlendMicro")) {
+					redBearService.connectDevice(device.getAddress(), false);
+					if(sp.getString("firsttime", "true").equals("true")) {
+						Intent intent = new Intent(DeviceListActivity.this, PinActivity.class);
+						intent.putExtra("frompin", false);
+						startActivity(intent);
+					}
+					else {
+						Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
+						intent.putExtra("frompin", false);
+						startActivity(intent);
+					}
 				}
 				else {
-					Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
-					intent.putExtra("frompin", false);
-					startActivity(intent);
+					new AlertDialog.Builder(DeviceListActivity.this).setTitle("Unknown device").setMessage("Are you sure you want to connect to this device?").setPositiveButton("OK", new OnClickListener() {
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							redBearService.connectDevice(device.getAddress(), false);
+							if(sp.getString("firsttime", "true").equals("true")) {
+								Intent intent = new Intent(DeviceListActivity.this, PinActivity.class);
+								intent.putExtra("frompin", false);
+								startActivity(intent);
+							}
+							else {
+								Intent intent = new Intent(DeviceListActivity.this, MainActivity.class);
+								intent.putExtra("frompin", false);
+								startActivity(intent);
+							}
+						}
+					}).setNegativeButton("Cancel", null).show();
 				}
 			}
 		});

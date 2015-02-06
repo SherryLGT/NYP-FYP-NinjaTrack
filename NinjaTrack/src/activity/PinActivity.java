@@ -78,7 +78,8 @@ public class PinActivity extends Activity implements IRBLProtocol {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.pin_list);
-
+		
+		setTitle("Settings");
 		device = DeviceListActivity.device;
 		mRedBearService = DeviceListActivity.redBearService;
 		pins = new SparseArray<Pin>();

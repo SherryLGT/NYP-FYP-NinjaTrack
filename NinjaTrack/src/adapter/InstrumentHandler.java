@@ -20,7 +20,6 @@ import android.media.SoundPool.OnLoadCompleteListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.SparseArray;
@@ -31,7 +30,7 @@ import fragment.HarpFragment;
 import fragment.RecorderFragment;
 import fragment.SaxophoneFragment;
 
-public abstract class InstrumentHandler {
+public class InstrumentHandler {
 	
 	public static final int RECORDER_FLAG = 0x00;
 	public static final int SAXOPHONE_FLAG = 0x01;
@@ -39,22 +38,22 @@ public abstract class InstrumentHandler {
 	public static final int BELL_FLAG = 0x03;
 	public static final int HARP_FLAG = 0x04;
 	
-	private static int recorder1Id;
-	private static int recorder2Id;
-	private static int recorder3Id;
-	private static int recorder4Id;
-	private static int recorder5Id;
-	private static int recorder6Id;
-	private static int recorder7Id;
-	private static int recorder8Id;
-	private static int saxophone1Id;
-	private static int saxophone2Id;
-	private static int saxophone3Id;
-	private static int saxophone4Id;
-	private static int saxophone5Id;
-	private static int saxophone6Id;
-	private static int saxophone7Id;
-	private static int saxophone8Id;
+	public static int recorder1Id;
+	public static int recorder2Id;
+	public static int recorder3Id;
+	public static int recorder4Id;
+	public static int recorder5Id;
+	public static int recorder6Id;
+	public static int recorder7Id;
+	public static int recorder8Id;
+	public static int saxophone1Id;
+	public static int saxophone2Id;
+	public static int saxophone3Id;
+	public static int saxophone4Id;
+	public static int saxophone5Id;
+	public static int saxophone6Id;
+	public static int saxophone7Id;
+	public static int saxophone8Id;
 	private static int drumId;
 	private static int snareId;
 	private static int bellId;
@@ -471,6 +470,7 @@ public abstract class InstrumentHandler {
 			
 			if(flag == RECORDER_FLAG || flag == SAXOPHONE_FLAG) {
 				ContinuousPlay cp = new ContinuousPlay(activity, toPlayId);
+//				ContinuousPlay cp = new ContinuousPlay(activity, toPlayFile);
 				switch(buttonNo) {
 					case 1:
 						sound1 = cp;

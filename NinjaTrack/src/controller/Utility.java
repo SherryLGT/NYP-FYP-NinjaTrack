@@ -22,6 +22,7 @@ public class Utility {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(format, Locale.getDefault());
 		GregorianCalendar cal = new GregorianCalendar();
 		try {
+			System.out.println("DATE : " + dateFormat.parse(date));
 			cal.setTime(dateFormat.parse(date));
 		} catch (ParseException e) {
 			e.printStackTrace();

@@ -2,8 +2,6 @@ package async;
 
 import activity.MainActivity;
 import adapter.InstrumentHandler;
-import android.content.Context;
-import android.media.AudioManager;
 import android.os.AsyncTask;
 
 public class ContinuousPlay extends AsyncTask<Void, Void, Void>{
@@ -28,10 +26,7 @@ public class ContinuousPlay extends AsyncTask<Void, Void, Void>{
 	@Override
 	protected Void doInBackground(Void... arg0) {
 		while(playOn){
-			AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-			final float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-			final float streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume;
-			InstrumentHandler.sp.play(id, streamVolume, streamVolume, 0, 0, 1);
+			InstrumentHandler.sp.play(id, 1, 1, 0, 0, 1);
 			try {
 				Thread.sleep(80);
 			} catch (InterruptedException e) {

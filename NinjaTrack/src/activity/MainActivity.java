@@ -39,8 +39,10 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.SharedPreferences.Editor;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -49,6 +51,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelUuid;
 import android.preference.PreferenceManager;
@@ -87,7 +90,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private ArrayList<NavDrawerItem> drawerItems;
 	private NavDrawerListAdapter adapter;
 	
-	private SharedPreferences sp;
+	public static SharedPreferences sp;
 	private Device device;
 	private RedBearService redBearService;
 	private RBLProtocol protocol;
@@ -96,9 +99,12 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private HashMap<String, Pin> changeValues;
 	private boolean isFirstReadPin = true;
 	private boolean isFirstReadRssi = true;
+	private boolean pin2, pin3, pin5, pin8, pin9, pin10, pin11, pin12, pin18, pin21, pin22, pin23;
 	
 	private Timer timer;
+	private Timer myTimer;
 	private TimerTask timerTask;
+	private TimerTask myTimerTask;
 	private boolean timerFlag;
 	private int timeout = 3000;
 	private ProgressDialog progress;
@@ -130,13 +136,22 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 								public void onClick(DialogInterface arg0, int arg1) {
 									MainActivity.this.finish();
 								}
-								
 							}).show();
 						}
 					});
 				}
 			}
 		};
+		myTimerTask = new TimerTask(){
+
+			@Override
+			public void run() {
+				handler.sendEmptyMessage(3);
+			}
+			
+		};
+		myTimer = new Timer();
+		myTimer.schedule(myTimerTask, 20000);
 		
 		if(device != null) {
 			device.setRssi(0);
@@ -250,17 +265,31 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				break;
 				
 			case R.id.action_about:
-				Toast.makeText(this, "About", Toast.LENGTH_SHORT).show();
+				AlertDialog.Builder aboutBuilder = new AlertDialog.Builder(this);
+				aboutBuilder.setMessage("If instruments are not playing according to settings made, please reconnect to device.").setPositiveButton("Ok", null).create().show();
 				break;
 				
 			case R.id.action_start_record:
-				startRecord.setVisible(false);
-				stopRecord.setVisible(true);
-				try {
-					InstrumentHandler.StartRecording();
-					Toast.makeText(MainActivity.this, "Recording started..", Toast.LENGTH_SHORT).show();
-				} catch (IOException e) {
-					e.printStackTrace();
+				AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+				AlertDialog.Builder startBuilder = new AlertDialog.Builder(this);
+				
+				if(audioManager.isWiredHeadsetOn()) {
+					Toast.makeText(this, "Please remove headset", Toast.LENGTH_LONG).show();
+				}
+				else {
+					startBuilder.setMessage("Start recording?").setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							startRecord.setVisible(false);
+							stopRecord.setVisible(true);
+							try {
+								InstrumentHandler.StartRecording();
+								Toast.makeText(MainActivity.this, "Recording started..", Toast.LENGTH_SHORT).show();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}).setNegativeButton("Cancel", null).create().show();
 				}
 				break;
 				
@@ -271,14 +300,14 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				View rootView = LayoutInflater.from(this).inflate(R.layout.filename_dialog, null);
 				final EditText et_filename = (EditText) rootView.findViewById(R.id.et_filename);
 				
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setView(rootView).setTitle("Input desired file name").setPositiveButton("Ok", null);
+				AlertDialog.Builder stopBuilder = new AlertDialog.Builder(this);
+				stopBuilder.setView(rootView).setTitle("Input desired file name").setPositiveButton("Ok", null);
 				
-				final AlertDialog dialog = builder.create();
-				dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+				final AlertDialog stopDialog = stopBuilder.create();
+				stopDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 					@Override
 					public void onShow(DialogInterface dialogInterface) {
-						Button btn_ok = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+						Button btn_ok = stopDialog.getButton(AlertDialog.BUTTON_POSITIVE);
 						btn_ok.setOnClickListener(new View.OnClickListener() {
 							@Override
 							public void onClick(View v) {
@@ -290,7 +319,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 									sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 									
 									Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_SHORT).show();
-									dialog.dismiss();
+									stopDialog.dismiss();
 								}
 								else {
 									Toast.makeText(MainActivity.this, "Please enter file name", Toast.LENGTH_SHORT).show();
@@ -299,7 +328,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 						});
 					}
 				});
-				dialog.show();
+				stopDialog.show();
 				break;
 		}
 
@@ -424,6 +453,10 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		@Override
 		public void onDeviceReadValue(int[] value) {
 			if(protocol != null) {
+				if(value == null){
+					progress.dismiss();
+					handler.sendEmptyMessage(3);
+				}
 				protocol.parseData(value);
 			}
 		}
@@ -563,6 +596,28 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 				pinInfo.setValue(value);
 		}
 		
+		if(pinInfo.getPin() == 2) pin2 = true;
+		if(pinInfo.getPin() == 3) pin3 = true;
+		if(pinInfo.getPin() == 5) pin5 = true;
+		if(pinInfo.getPin() == 8) pin8 = true;
+		if(pinInfo.getPin() == 9) pin9 = true;
+		if(pinInfo.getPin() == 10) pin10 = true;
+		if(pinInfo.getPin() == 11) pin11 = true;
+		if(pinInfo.getPin() == 12) pin12 = true;
+		if(pinInfo.getPin() == 18) pin18 = true;
+		if(pinInfo.getPin() == 21) pin21 = true;
+		if(pinInfo.getPin() == 22) pin22 = true;
+		if(pinInfo.getPin() == 23) pin23 = true;
+		
+		if(pin2 && pin3 && pin5 && pin8 && pin9 && pin10 && pin11 && pin12 && pin18 && pin21 && pin22 && pin23) {
+			progress.dismiss();
+			myTimer.cancel();
+			if (timerFlag == true) {
+				timerTask.cancel(); 
+				InstrumentHandler.SetMode(protocol, sp, pins);
+			}
+		}
+		
 		// Switch Pins
 		if(pinInfo.getPin() == 22) {
 			if(pinInfo.getValue() == 0) {
@@ -573,11 +628,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			}
 		}
 		if(pinInfo.getPin() == 23) {
-			progress.dismiss();
-			if (timerFlag == true) {
-				timerTask.cancel(); 
-				InstrumentHandler.SetMode(protocol, sp, pins);
-			}
 			if(pinInfo.getValue() == 0) {
 				InstrumentHandler.switch2_flag = 0;
 			}
@@ -696,6 +746,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		}
 		
 		// Button Pin 2, 3, 5, 8, 9, 10, 11, 12
+		// Accelerometer Pin 18
 		// Flex Sensor Pin 21
 		// Switch Pin 22, 23
 		// Press|Switch on/off - 1/0
@@ -732,6 +783,15 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 					timer.schedule(timerTask, timeout);
 					timerFlag = true;
 				}
+			}
+			else if(msg.what == 3){
+				myTimer.cancel();
+				new AlertDialog.Builder(MainActivity.this).setTitle("No response").setMessage("Please reconnect to device.").setPositiveButton("OK", new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+						MainActivity.this.finish();
+					}
+				}).show();
 			}
 			
 			return true;

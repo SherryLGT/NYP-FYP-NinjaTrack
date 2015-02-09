@@ -62,5 +62,7 @@
     <string name="lbl_ninjatrack">Ninja Track</string>
     <string name="btn_login">Login</string>
     <string name="btn_reconnect">Reconnect</string>
+    <string name="lbl_sensitivity">SENSITIVITY</string>
+    <string name="lbl_sensitivitypara">Set sensitivity</string>
     
 </resources>

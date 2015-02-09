@@ -15,14 +15,16 @@
 	    android:text="@string/lbl_account"
 	    android:textSize="@dimen/header_size"
 	    android:textColor="@color/blue"
-	    android:textStyle="bold" />
+	    android:textStyle="bold"
+	    android:visibility="gone" />
 	    
     <View
         android:id="@+id/divider_account"
         android:layout_width="fill_parent"
         android:layout_height="2dp"
         android:layout_below="@+id/lbl_account"
-        android:background="@color/blue" />
+        android:background="@color/blue"
+	    android:visibility="gone" />
 	    
     <RelativeLayout
         android:id="@+id/rl_account"
@@ -30,7 +32,8 @@
 	    android:layout_height="wrap_content"
 	    android:layout_below="@+id/divider_account"
 	    android:layout_marginBottom="20dp"
-        android:background="@color/dull_blue" >
+        android:background="@color/dull_blue"
+	    android:visibility="gone" >
 	    
         <TextView
 	        android:id="@+id/lbl_username"
@@ -82,7 +85,7 @@
             bootstrapbutton:bb_roundedCorners="true"
             bootstrapbutton:bb_type="primary" />
     </RelativeLayout>
-	    
+	
     <TextView
         android:id="@+id/lbl_device"
 	    android:layout_width="wrap_content"
@@ -142,5 +145,56 @@
             bootstrapbutton:bb_roundedCorners="true"
             bootstrapbutton:bb_type="primary" />
     </RelativeLayout>
+	
+    <TextView
+        android:id="@+id/lbl_sensitivity"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/rl_device"
+	    android:text="@string/lbl_sensitivity"
+	    android:textSize="@dimen/header_size"
+	    android:textColor="@color/blue"
+	    android:textStyle="bold" />
+	    
+    <View
+        android:id="@+id/divider_sensitivity"
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:layout_below="@+id/lbl_sensitivity"
+        android:background="@color/blue" />
+	    
+    <RelativeLayout
+        android:id="@+id/rl_sensitivity"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@+id/divider_sensitivity"
+	    android:paddingTop="10dp"
+	    android:layout_marginBottom="20dp"
+        android:background="@color/dull_blue" >
+	    
+        <TextView
+	        android:id="@+id/lbl_sensitivitypara"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_marginRight="58dp"
+		    android:text="@string/lbl_sensitivitypara"
+	    	android:textSize="@dimen/font_size" />
 
+	    <Switch
+	        android:id="@+id/sensitivity_switch"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:maxWidth="100dp"
+	        android:minWidth="100dp"
+	        android:layout_centerVertical="true"
+	        android:layout_gravity="left|center_vertical"
+		    android:layout_toRightOf="@+id/lbl_sensitivitypara"
+		    android:layout_marginBottom="15dp"
+	        android:switchPadding="1dp"
+	        android:textOff="Low"
+	        android:textOn="High"
+	        android:thumb="@color/blue" 
+	        android:thumbTextPadding="5dp" />
+    </RelativeLayout>
+    
 </RelativeLayout>

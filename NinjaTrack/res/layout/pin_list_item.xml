@@ -36,7 +36,7 @@
         android:switchPadding="1dp"
         android:textOff="Low"
         android:maxWidth="100dp"
-        android:minWidth="100dp" 
+        android:minWidth="100dp"
         android:textOn="High" 
         android:thumb="@color/blue" 
         android:thumbTextPadding="5dp" />

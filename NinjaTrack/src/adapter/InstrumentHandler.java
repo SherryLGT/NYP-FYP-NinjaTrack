@@ -11,7 +11,6 @@ import activity.MainActivity;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
@@ -58,14 +57,15 @@ public class InstrumentHandler {
 	private static int snareId;
 	private static int bellId;
 	private static int harpId;
-	
-	public static int curr_flag = -1; // No value -1
-	public static int prev_flag = -1; // No value -1
-	public static int switch1_flag = -1; // No value -1
-	public static int switch2_flag = -1; // No value -1
+
+	public static int curr_flag = -1;	 // For no value : -1
+	public static int prev_flag = -1; 	 // For no value : -1
+	public static int switch1_flag = -1; // For no value : -1
+	public static int switch2_flag = -1; // For no value : -1
 	public static int flex;
 	public static int accx;
 	public static Deque<Integer> accx_stack = new ArrayDeque<Integer>();
+	public static float volume;
 	
 	public static String button1Path;
 	public static String button2Path;
@@ -94,10 +94,12 @@ public class InstrumentHandler {
 	public static boolean resetDrum = true; // Played before or not
 	public static boolean enableBell = true; // Within boundary
 	public static boolean resetBell = true; // Played before or not
+	public static boolean playBell = false;
 	public static boolean readAccx = false;
 	public static boolean bellOrHarp = true;
 	public static boolean bellInitiated = false;
 	public static boolean harpInitiated = false;
+	public static boolean sensitive = false;
 	
 	public static ContinuousPlay sound1;
 	public static ContinuousPlay sound2;
@@ -178,10 +180,12 @@ public class InstrumentHandler {
 					resetDrum = false;
 				}
 				
+				IsMoving();
 				flag = DRUM_FLAG;
 			}
 			else if(switch1_flag == 1 && switch2_flag == 0) {
-				if(IsMoving()) { // Bell
+				// Bell
+				if(IsMoving()) {
 					if(accx >= 460) {
 						enableBell = true;
 					}
@@ -193,6 +197,7 @@ public class InstrumentHandler {
 					flag = BELL_FLAG;
 				}
 				else { // Harp
+					playBell = false;
 					flag = HARP_FLAG;
 				}
 			}
@@ -377,7 +382,10 @@ public class InstrumentHandler {
 			}
 		}
 		
-		else if(flag == BELL_FLAG) {			
+		else if(flag == BELL_FLAG) {
+			if(buttonNo != -1) {
+				playBell = true;
+			}
 			switch(buttonNo) {
 				case 1:
 					toPlayFile = button1Path;
@@ -415,7 +423,7 @@ public class InstrumentHandler {
 			if(toPlayFile != null){
 				bellPath = toPlayFile;
 			}
-			if(enableBell && !resetBell && bell != -1) {
+			if(enableBell && playBell && !resetBell && bell != -1) {
 				toPlayId = bell;
 				resetBell = true;
 			}
@@ -515,10 +523,12 @@ public class InstrumentHandler {
 		}
 		
 		if(toPlayId != -1){
-			AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-			final float maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-			final float streamVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / maxVolume;
-			sp.play(toPlayId, streamVolume, streamVolume, 0, 0, 1);
+			if(flag == DRUM_FLAG || flag == BELL_FLAG) {
+				sp.play(toPlayId, volume, volume, 0, 0, 1);
+			}
+			else {
+				sp.play(toPlayId, 1, 1, 0, 0, 1);
+			}
 		}
 	}
 	
@@ -568,6 +578,7 @@ public class InstrumentHandler {
 			}
 		}
 		else {
+			playBell = false;
 		}
 	}
 	
@@ -592,11 +603,23 @@ public class InstrumentHandler {
 				count++;
 			}
 			accx_stack = temp;
-			if(movement  >= 10) {
-				return true;
+			MonitorVolume(movement);
+			
+			if(sensitive) {
+				if(movement >= 2) {
+					return true;
+				}
+				else{
+					return false;
+				}
 			}
-			else{
-				return false;
+			else {
+				if(movement >= 8) {
+					return true;
+				}
+				else{
+					return false;
+				}
 			}
 		}
 		return false;
@@ -609,6 +632,21 @@ public class InstrumentHandler {
 		else{
 			accx_stack.pollLast();
 			accx_stack.push(change);
+		}
+	}
+	
+	public static void MonitorVolume(int movement) {
+		if(movement >= 40) {
+			volume = 1.0f;
+		}
+		else if(movement >= 30) {
+			volume = 0.8f;
+		}
+		else if(movement >= 20) {
+			volume = 0.5f;
+		}
+		else {
+			volume = 0.3f;
 		}
 	}
 	
@@ -660,35 +698,37 @@ public class InstrumentHandler {
 	}
 	
 	public static void ManipulateUI(int flag, String toPlayFile, boolean isPlaying) {
-		String[] temp1 = toPlayFile.split("/");
-		String title = temp1[1];
+		if(toPlayFile != null) {
+			String[] temp1 = toPlayFile.split("/");
+			String title = temp1[1];
 
-		Message msg = new Message();
-		Bundle data = new Bundle();
-		data.putString("title", title);
-		data.putBoolean("isPlaying", isPlaying);
-		msg.setData(data);
-		
-		switch(flag) {
-			case RECORDER_FLAG :
-				RecorderFragment.handler.sendMessage(msg);
-				break;
-				
-			case SAXOPHONE_FLAG :
-				SaxophoneFragment.handler.sendMessage(msg);
-				break;
-				
-			case DRUM_FLAG :
-				DrumFragment.handler.sendMessage(msg);
-				break;
-				
-			case BELL_FLAG :
-				HandBellFragment.handler.sendMessage(msg);
-				break;
-				
-			case HARP_FLAG :
-				HarpFragment.handler.sendMessage(msg);
-				break;
+			Message msg = new Message();
+			Bundle data = new Bundle();
+			data.putString("title", title);
+			data.putBoolean("isPlaying", isPlaying);
+			msg.setData(data);
+			
+			switch(flag) {
+				case RECORDER_FLAG :
+					RecorderFragment.handler.sendMessage(msg);
+					break;
+					
+				case SAXOPHONE_FLAG :
+					SaxophoneFragment.handler.sendMessage(msg);
+					break;
+					
+				case DRUM_FLAG :
+					DrumFragment.handler.sendMessage(msg);
+					break;
+					
+				case BELL_FLAG :
+					HandBellFragment.handler.sendMessage(msg);
+					break;
+					
+				case HARP_FLAG :
+					HarpFragment.handler.sendMessage(msg);
+					break;
+			}
 		}
 	}
 }

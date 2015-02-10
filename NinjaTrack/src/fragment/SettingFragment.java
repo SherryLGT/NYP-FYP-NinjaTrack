@@ -8,6 +8,7 @@ import activity.PinActivity;
 import adapter.InstrumentHandler;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
@@ -33,7 +34,6 @@ public class SettingFragment extends Fragment {
 	private Switch sen_switch;
 	
 	private Device device;
-	public static PinFragment pinFragment;
 	
 	public SettingFragment(){}
 	
@@ -59,8 +59,9 @@ public class SettingFragment extends Fragment {
             	tv_ninjatrack.setOnClickListener(new OnClickListener() {
     				@Override
     				public void onClick(View view) {
-    					pinFragment = new PinFragment(device, DeviceListActivity.redBearService);
-    					getActivity().getFragmentManager().beginTransaction().add(R.id.content, pinFragment).commit();
+						Intent intent = new Intent(getActivity(), PinActivity.class);
+						getActivity().finish();
+						startActivity(intent);
     				}
             	});
         	}

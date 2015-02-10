@@ -110,6 +110,7 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 	private ProgressDialog progress;
 	
 	public static int position = 0;
+	private boolean active;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -239,7 +240,19 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		
 		super.onResume();
 	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		active = true;
+	}
 	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		active = false;
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.main, menu);
@@ -335,17 +348,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		return super.onOptionsItemSelected(item);
 	}
 	
-	@Override
-	public void onBackPressed() {
-		if(SettingFragment.pinFragment != null) {
-			getFragmentManager().beginTransaction().remove(SettingFragment.pinFragment).commit();
-			SettingFragment.pinFragment = null;
-		}
-		else {
-			super.onBackPressed();
-		}
-	}
-	
 	// The click listener for ListView in the navigation drawer
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
@@ -380,11 +382,6 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 		drawerItems.get(1).setIcon(R.drawable.icon_profile1);
 		drawerItems.get(2).setIcon(R.drawable.icon_setting1);
 		drawerItems.get(3).setIcon(R.drawable.icon_website1);
-
-		if(SettingFragment.pinFragment != null) {
-			getFragmentManager().beginTransaction().remove(SettingFragment.pinFragment).commit();
-			SettingFragment.pinFragment = null;
-		}
 		
 		switch (position) {
 			case 0: // Music
@@ -786,6 +783,8 @@ public class MainActivity extends SherlockFragmentActivity implements IRBLProtoc
 			}
 			else if(msg.what == 3){
 				myTimer.cancel();
+				if(!active)
+					return true;
 				new AlertDialog.Builder(MainActivity.this).setTitle("No response").setMessage("Please reconnect to device.").setPositiveButton("OK", new OnClickListener() {
 					@Override
 					public void onClick(DialogInterface arg0, int arg1) {
